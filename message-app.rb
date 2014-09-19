@@ -14,7 +14,8 @@ get("/message") do
 
   html = ""
   html.concat("<h1>Message of the Day</h1>")
-  html.concat("<p>Today's message is: #{file_contents}")
+  html.concat("<p>Today's message is: #{file_contents}</p>")
+  html.concat("<p>Lord Satan appreciates your service</p>")
 
   body(html)
 end

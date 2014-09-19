@@ -20,10 +20,14 @@ get("/") do
 end
 
 post("/messages") do
-  message_body = params["body"]
-  message_time = DateTime.now
 
-  message = Message.create(body: message_body, created_at: message_time)
+  message_body = params["body"]
+
+  if message_body.include? "You're"
+    message = Message.create(body: "No, you're " << message_body[6..message_body.length], created_at: DateTime.now)
+  else
+    message = Message.create(body: params["body"].reverse, created_at: DateTime.now)
+  end
 
   if message.saved?
     redirect("/")

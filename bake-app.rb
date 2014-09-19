@@ -8,7 +8,7 @@ get("/") do
   html.concat("<li><a href='/waffles'>show me waffles</a></li>")
   html.concat("<li><a href='/waffles/chocolate'>show me chocolate</a></li>")
   html.concat("<li><a href='/bake?baked_good=cookies&count=10'>bake 10 cookies</a></li>")
-  html.concat("<li><a href='/bake?baked_good=cronut&count=5'>bake 5 cronuts</a></li>")
+  html.concat("<li><a href='/bake?baked_good=cronuts&count=5'>bake 5 cronuts</a></li>")
   html.concat("<li><a href='/bake?baked_good=cupcakes&count=1138'>bake 1138 cupcakes</a></li>")
   html.concat("</ul>")
 
@@ -18,7 +18,7 @@ end
 get("/waffles") do
   html = ""
 
-  html.concat("<h1>Waffles are delicious.</h1>")
+  html.concat("<h1>Waffles are deliciousssss.</h1>")
 
   body(html)
 end
@@ -40,7 +40,7 @@ get("/bake") do
   html = "I'm going to bake #{count} #{baked_good}!"
 
   html.concat("<ul>")
-  count.times do |num|
+  for i in 0..num
     html.concat("<li>#{baked_good} number #{num}</li>")
   end
   html.concat("</ul>")
