@@ -9,6 +9,15 @@ class Message
   property :id,         Serial
   property :body,       Text,     required: true
   property :created_at, DateTime, required: true
+  property :likes,      Integer,  required: true
+  property :dislikes,   Integer,  required: true
+  
+  def addLike()
+    self.likes += 1
+  end
+  def subLike()
+    self.likes -= 1
+  end
 end
 
 DataMapper.finalize()
@@ -19,15 +28,26 @@ get("/") do
   erb(:index, locals: { messages: records })
 end
 
+get ("/submitOpinion") do
+  records = Message.all(order: :created_at.desc)
+  if params["opinion"][0..3] == "Like" 
+    message = records[params["opinion"][4..params["opinion"].length].to_i]
+    message.addLike()
+  elsif params["opinion"][0..3] == "Hate" 
+    message = records[params["opinion"][4..params["opinion"].length].to_i]
+    message.subLike()
+  elsif params["opinion"][0..3] == "Impl" 
+  
+  end
+  message.save
+  redirect("/")
+end
+
 post("/messages") do
 
   message_body = params["body"]
-
-  if message_body.include? "You're"
-    message = Message.create(body: "No, you're " << message_body[6..message_body.length], created_at: DateTime.now)
-  else
-    message = Message.create(body: params["body"].reverse, created_at: DateTime.now)
-  end
+  
+  message = Message.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0)
 
   if message.saved?
     redirect("/")
