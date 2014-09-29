@@ -20,22 +20,24 @@
         <h2>Messages</h2>
         <ol class="message-list">
           <% messages.each do |message| %>
-            <li>
-              <div>
-                <form name="input" action="/submitOpinion" method="get">
-                  <input type="checkbox" name="opinion" value=<%= "Like" << messages.index(message).to_s %> >Like
-                  <input type="checkbox" name="opinion" value=<%= "Hate" << messages.index(message).to_s %> >Hate
-                  <input type="checkbox" name="opinion" value=<%= "Impl" << messages.index(message).to_s %> >Implode
-                  <input type="submit" value="Submit">
-                </form> 
-              </div>
-              <div class="message-body">
-                <%= message.body  << " " << message.likes.to_s << " likes, " << message.dislikes.to_s << " dislikes" %>
-              </div>
-              <div class="message-timestamp">
-                Posted on <%= message.created_at.strftime("%B %d, %Y at %l:%M%p") %>
-              </div>
-            </li>
+            <% if message.shown == 1 then %>
+              <li>
+                <div>
+                  <form name="input" action="/submitOpinion" method="get">
+                    <input type="checkbox" name="opinion" value=<%= "Like" << messages.index(message).to_s %> >Like
+                    <input type="checkbox" name="opinion" value=<%= "Hate" << messages.index(message).to_s %> >Hate
+                    <input type="checkbox" name="opinion" value=<%= "Impl" << messages.index(message).to_s %> >Implode
+                    <input type="submit" value="Submit">
+                  </form> 
+                </div>
+                <div class="message-body">
+                  <%= message.body << " " << message.likes.to_s << " likes, " << message.dislikes.to_s << " dislikes" %>
+                </div>
+                <div class="message-timestamp">
+                  Posted on <%= message.created_at.strftime("%B %d, %Y at %l:%M%p") %>
+                </div>
+              </li>
+            <% end %>
           <% end %>
         </ol>
       <% end %>
