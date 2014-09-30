@@ -23,12 +23,23 @@
             <% if message.shown == 1 then %>
               <li>
                 <div>
+                  <!--
                   <form name="input" action="/submitOpinion" method="get">
-                    <input type="checkbox" name="opinion" value=<%= "Like" << messages.index(message).to_s %> >Like
-                    <input type="checkbox" name="opinion" value=<%= "Hate" << messages.index(message).to_s %> >Hate
-                    <input type="checkbox" name="opinion" value=<%= "Impl" << messages.index(message).to_s %> >Implode
+                    <input type="checkbox" name="opinion" value=<#%= "Like" << messages.index(message).to_s %> >Like
+                    <input type="checkbox" name="opinion" value=<#%= "Hate" << messages.index(message).to_s %> >Hate
+                    <input type="checkbox" name="opinion" value=<#%= "Impl" << messages.index(message).to_s %> >Implode
                     <input type="submit" value="Submit">
-                  </form> 
+                  </form>
+                  -->
+                  <form action="/messageLike/<%= message.id %>" method="POST">
+                    <button type="submit">Like</button>
+                  </form>
+                  <form action="/messageHate/<%= message.id %>" method="POST">
+                    <button type="submit">Hate</button>
+                  </form>
+                  <form action="/messageImplode/<%= message.id %>" method="POST">
+                    <button type="submit">IMPLODE</button>
+                  </form>
                 </div>
                 <div class="message-body">
                   <%= message.body << " " << message.likes.to_s << " likes, " << message.dislikes.to_s << " dislikes" %>

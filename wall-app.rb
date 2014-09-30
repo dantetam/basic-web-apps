@@ -35,18 +35,26 @@ get("/") do
   erb(:index, locals: { messages: records })
 end
 
-get ("/submitOpinion") do
+post ("/messageLike/*") do |id|
   records = Message.all(order: :created_at.desc)
-  if params["opinion"][0..3] == "Like" 
-    message = records[params["opinion"][4..params["opinion"].length].to_i]
-    message.addLike()
-  elsif params["opinion"][0..3] == "Hate" 
-    message = records[params["opinion"][4..params["opinion"].length].to_i]
-    message.subLike()
-  elsif params["opinion"][0..3] == "Impl" 
-    message = records[params["opinion"][4..params["opinion"].length].to_i]
-    message.hide()
-  end
+  message = Message.get(id)
+  message.addLike()
+  message.save
+  redirect("/")
+end
+
+post ("/messageHate/*") do |id|
+  records = Message.all(order: :created_at.desc)
+  message = Message.get(id)
+  message.subLike()
+  message.save
+  redirect("/")
+end
+
+post ("/messageImplode/*") do |id|
+  records = Message.all(order: :created_at.desc)
+  message = Message.get(id)
+  message.hide()
   message.save
   redirect("/")
 end
