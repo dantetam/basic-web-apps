@@ -22,7 +22,21 @@ body {
   width: 100%;
 }
 
+#message-form #comment-body {
+  height: 100px;
+  width: 100%;
+  text-align: right;
+}
+
 .message-list .message-timestamp {
+  font-size: 12px;
+  font-style: italic;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  text-align: right;
+}
+
+.message-list .comment-timestamp {
   font-size: 12px;
   font-style: italic;
   margin-bottom: 10px;

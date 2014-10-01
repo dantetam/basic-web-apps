@@ -82,26 +82,6 @@ post ("/messageImplode/*") do |id|
   redirect("/")
 end
 
-=begin
-get ("/like") do
-  records = Message.all(order: :created_at.desc)
-  message = records[params["opinion"].to_i]
-  message.addLike()
-  message.save
-end
-
-get ("/hate") do
-  records = Message.all(order: :created_at.desc)
-  message = records[params["opinion"].to_i]
-  message.subLike()
-  message.save
-end
-
-get ("/implode") do
-  redirect("/")
-end
-=end
-
 post("/messages") do
 
   message_body = params["body"]
@@ -118,24 +98,6 @@ post("/messages") do
     erb(:error)
   end
 end
-
-=begin
-post("/comments") do
-
-  comment = Comment.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0, shown: 1, creator: c, parentId: id)
-  c = params["creator"].to_s
-  if c == "" then
-    c = "Tony Swan"
-  end
-  
-  if comment.saved?
-    redirect("/")
-  else
-    erb(:error)
-  end
-
-end
-=end
 
 post("/comments/*") do |id|
   

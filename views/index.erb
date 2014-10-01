@@ -51,7 +51,12 @@
                 </div>
                 <% comments.each do |comment| %>
                   <% if comment.parentId.to_i == message.id then %>
-                    <p><%= comment.body %></p>
+                    <div class="comment-body">
+                      <p><%= comment.body %></p>
+                    </div>
+                    <div class="comment-timestamp">
+                      <p><%= "Comment by " << comment.creator << "; " << message.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
+                    </div>
                   <% end %>
                 <% end %>
                 <div>
