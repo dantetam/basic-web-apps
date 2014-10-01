@@ -5,13 +5,13 @@ require "./database_setup"
 
 class Message
   include DataMapper::Resource
-
   property :id,         Serial
   property :body,       Text,     required: true
   property :created_at, DateTime, required: true
   property :likes,      Integer,  required: true
   property :dislikes,   Integer,  required: true
   property :shown,      Integer,  required: true
+  property :creator,    String,   required: true, default: "Tony Swan"
   
   def addLike() 
     self.likes += 1 
@@ -22,7 +22,29 @@ class Message
   def hide()
     self.shown = 0
   end
+end
+
+class Comment
+  include DataMapper::Resource
+  property :id,         Serial
+  property :body,       Text,     required: true
+  property :created_at, DateTime, required: true
+  property :likes,      Integer,  required: true
+  property :dislikes,   Integer,  required: true
+  property :shown,      Integer,  required: true
+  property :creator,    String,   required: true, default: "Tony Swan"
   
+  property :parentId,   Integer,  required: true
+  
+  def addLike() 
+    self.likes += 1 
+  end
+  def subLike() 
+    self.dislikes += 1 
+  end
+  def hide()
+    self.shown = 0
+  end
 end
 
 DataMapper.finalize()
@@ -32,7 +54,8 @@ DataMapper.auto_upgrade!()
 
 get("/") do
   records = Message.all(order: :created_at.desc)
-  erb(:index, locals: { messages: records })
+  records2 = Comment.all(order: :created_at.desc)
+  erb(:index, locals: { messages: records, comments: records2 })
 end
 
 post ("/messageLike/*") do |id|
@@ -82,12 +105,51 @@ end
 post("/messages") do
 
   message_body = params["body"]
+  c = params["creator"].to_s
+  if c == "" then
+    c = "Tony Swan"
+  end
   
-  message = Message.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0, shown: 1)
+  message = Message.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0, shown: 1, creator: c)
 
   if message.saved?
     redirect("/")
   else
     erb(:error)
   end
+end
+
+=begin
+post("/comments") do
+
+  comment = Comment.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0, shown: 1, creator: c, parentId: id)
+  c = params["creator"].to_s
+  if c == "" then
+    c = "Tony Swan"
+  end
+  
+  if comment.saved?
+    redirect("/")
+  else
+    erb(:error)
+  end
+
+end
+=end
+
+post("/comments/*") do |id|
+  
+  c = params["creator"].to_s
+  if c == "" then
+    c = "Tony Swan"
+  end
+  
+  comment = Comment.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0, shown: 1, creator: c, parentId: id)
+  
+  if comment.saved?
+    redirect("/")
+  else
+    erb(:error)
+  end
+  
 end

@@ -12,7 +12,11 @@
       <h1>Social Wall</h1>
       <form id="message-form" method="POST" action="/messages">
         <textarea id="message-body" name="body" placeholder="Enter a message here."></textarea>
-        <button type="submit">Post Message</button>
+        <textarea id="message-creator" name="creator" placeholder="Enter your alias."></textarea>
+        <button type="submit">Post</button>
+      </form>
+      <form id="message-form" method="POST" action="/messages">
+        
       </form>
       <% if messages.empty? %>
         <h2>Sorry, no messages. :(</h2>
@@ -42,7 +46,20 @@
                   </form>
                 </div>
                 <div class="message-body">
-                  <%= message.body << " " << message.likes.to_s << " likes, " << message.dislikes.to_s << " dislikes" %>
+                  <p><%= message.body %></p>
+                  <p><%= "Posted by " << message.creator << "; " << message.likes.to_s << " likes, " << message.dislikes.to_s << " dislikes" %></p>
+                </div>
+                <% comments.each do |comment| %>
+                  <% if comment.parentId.to_i == message.id then %>
+                    <p><%= comment.body %></p>
+                  <% end %>
+                <% end %>
+                <div>
+                  <form id="comment-form" method="POST" action="/comments/<%= message.id %>">
+                    <textarea id="comment-body" name="body" placeholder="Enter a comment to this message."></textarea>
+                    <textarea id="comment-creator" name="creator" placeholder="Enter your alias."></textarea>
+                    <button type="submit">Post</button>
+                  </form>
                 </div>
                 <div class="message-timestamp">
                   Posted on <%= message.created_at.strftime("%B %d, %Y at %l:%M%p") %>
