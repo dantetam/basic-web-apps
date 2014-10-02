@@ -1,5 +1,5 @@
 body {
-  background-color: white;
+  background-color: rgb(150,225,255);
   color: rgb(150/255*32, 225/255*32, 255/255*32);
 }
 
@@ -22,9 +22,26 @@ body {
   width: 100%;
 }
 
-#message-form #comment-body {
+#message-form #message-creator {
+  height: 20px;
+  width: 100%;
+}
+
+#comment-form #comment-body {
   height: 100px;
   width: 100%;
+}
+
+#comment-form #comment-creator {
+  height: 20px;
+  width: 100%;
+}
+
+.message-list .comment-body {
+  font-size: 12px;
+  /*font-style: italic;*/
+  margin-bottom: 10px;
+  margin-top: 10px;
   text-align: right;
 }
 
@@ -33,7 +50,7 @@ body {
   font-style: italic;
   margin-bottom: 10px;
   margin-top: 10px;
-  text-align: right;
+  text-align: left;
 }
 
 .message-list .comment-timestamp {

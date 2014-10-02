@@ -82,11 +82,33 @@ post ("/messageImplode/*") do |id|
   redirect("/")
 end
 
+post ("/commentLike/*") do |id|
+  puts id
+  comment = Comment.get(id)
+  comment.addLike()
+  comment.save
+  redirect("/")
+end
+
+post ("/commentHate/*") do |id|
+  comment = Comment.get(id)
+  comment.subLike()
+  comment.save
+  redirect("/")
+end
+
+post ("/commentImplode/*") do |id|
+  comment = Comment.get(id)
+  comment.hide()
+  comment.save
+  redirect("/")
+end
+
 post("/messages") do
 
   message_body = params["body"]
   c = params["creator"].to_s
-  if c == "" then
+  if c == "" or c.include? " " then
     c = "Tony Swan"
   end
   
@@ -102,7 +124,7 @@ end
 post("/comments/*") do |id|
   
   c = params["creator"].to_s
-  if c == "" then
+  if c == "" or c.include? " " then
     c = "Tony Swan"
   end
   

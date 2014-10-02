@@ -26,6 +26,10 @@
           <% messages.each do |message| %>
             <% if message.shown == 1 then %>
               <li>
+                <div class="message-body">
+                  <p><%= message.body %></p>
+                  <p><%= "Posted by " << message.creator << "; " << message.likes.to_s << "+/" << message.dislikes.to_s << "-" %></p>
+                </div>
                 <div>
                   <!--
                   <form name="input" action="/submitOpinion" method="get">
@@ -45,17 +49,28 @@
                     <button type="submit">IMPLODE</button>
                   </form>
                 </div>
-                <div class="message-body">
-                  <p><%= message.body %></p>
-                  <p><%= "Posted by " << message.creator << "; " << message.likes.to_s << " likes, " << message.dislikes.to_s << " dislikes" %></p>
+                <div class="message-timestamp">
+                  Posted on <%= message.created_at.strftime("%B %d, %Y at %l:%M%p") %>
                 </div>
                 <% comments.each do |comment| %>
-                  <% if comment.parentId.to_i == message.id then %>
+                  <% if comment.parentId.to_i == message.id and comment.shown == 1 then %>
                     <div class="comment-body">
                       <p><%= comment.body %></p>
                     </div>
                     <div class="comment-timestamp">
-                      <p><%= "Comment by " << comment.creator << "; " << message.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
+                      <p><%= "Commented by " << comment.creator << "; " << message.created_at.strftime("%B %d, %Y at %l:%M%p") << " " <<
+                      comment.likes.to_s << "+/" << comment.dislikes.to_s << "-"%></p>
+                      <div>
+                        <form action="/commentLike/<%= comment.id %>" method="POST">
+                          <button type="submit">Like</button>
+                        </form>
+                        <form action="/commentHate/<%= comment.id %>" method="POST">
+                          <button type="submit">Hate</button>
+                        </form>
+                        <form action="/commentImplode/<%= comment.id %>" method="POST">
+                          <button type="submit">IMPLODE</button>
+                        </form>
+                      </div>
                     </div>
                   <% end %>
                 <% end %>
@@ -65,9 +80,6 @@
                     <textarea id="comment-creator" name="creator" placeholder="Enter your alias."></textarea>
                     <button type="submit">Post</button>
                   </form>
-                </div>
-                <div class="message-timestamp">
-                  Posted on <%= message.created_at.strftime("%B %d, %Y at %l:%M%p") %>
                 </div>
               </li>
             <% end %>
