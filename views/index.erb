@@ -10,13 +10,33 @@
   <body>
     <div id="page">
       <h1>Social Wall</h1>
+      <% if loggedUser != nil then %>
+        <p><%= "Logged in as: " << loggedUser.name %></p>
+      <% else %>
+        <p>You are not logged in.</p>
+      <% end %>
+      <!--
+      <#% users.each do |user| %>
+        <#% if users.index(user).to_i == loggedUser then %>
+          <p>Logged in</p>
+        <#% else %>
+          <p><#%= user.name %></p>
+        <#% end %>
+      <#% end %>
+      -->
       <form id="message-form" method="POST" action="/messages">
         <textarea id="message-body" name="body" placeholder="Enter a message here."></textarea>
-        <textarea id="message-creator" name="creator" placeholder="Enter your alias."></textarea>
         <button type="submit">Post</button>
       </form>
-      <form id="message-form" method="POST" action="/messages">
-        
+      <form id="sign-up-form" method="POST" action="/register">
+        <textarea id="sign-up-username" name="username" placeholder="Your new username"></textarea>
+        <textarea id="sign-up-password" name="password" placeholder="Your new password"></textarea>
+        <button type="submit">Sign up!</button>
+      </form>
+      <form id="sign-in-form" method="POST" action="/signin">
+        <textarea id="sign-in-username" name="username" placeholder="Username"></textarea>
+        <textarea id="sign-in-password" name="password" placeholder="Password"></textarea>
+        <button type="submit">Sign in!</button>
       </form>
       <% if messages.empty? %>
         <h2>Sorry, no messages. :(</h2>
@@ -28,7 +48,7 @@
               <li>
                 <div class="message-body">
                   <p><%= message.body %></p>
-                  <p><%= "Posted by " << message.creator << "; " << message.likes.to_s << "+/" << message.dislikes.to_s << "-" %></p>
+                  <p><%= "Posted by " << message.user_creator << "; " << message.likes.to_s << "+/" << message.dislikes.to_s << "-" %></p>
                 </div>
                 <div>
                   <!--
@@ -58,8 +78,7 @@
                       <p><%= comment.body %></p>
                     </div>
                     <div class="comment-timestamp">
-                      <p><%= "Commented by " << comment.creator << "; " << message.created_at.strftime("%B %d, %Y at %l:%M%p") << " " <<
-                      comment.likes.to_s << "+/" << comment.dislikes.to_s << "-"%></p>
+                      <p><%= "Commented by " << loggedUser.name << " at " << message.created_at.strftime("%B %d, %Y at %l:%M%p") << " " << comment.likes.to_s << "+/" << comment.dislikes.to_s << "-" %></p>
                       <div>
                         <form action="/commentLike/<%= comment.id %>" method="POST">
                           <button type="submit">Like</button>
@@ -77,7 +96,6 @@
                 <div>
                   <form id="comment-form" method="POST" action="/comments/<%= message.id %>">
                     <textarea id="comment-body" name="body" placeholder="Enter a comment to this message."></textarea>
-                    <textarea id="comment-creator" name="creator" placeholder="Enter your alias."></textarea>
                     <button type="submit">Post</button>
                   </form>
                 </div>
@@ -85,6 +103,10 @@
             <% end %>
           <% end %>
         </ol>
+      <% end %>
+      <h2>Registered Users</h2>
+      <% users.each do |user| %>
+        <p><%= user.name %></p>
       <% end %>
     </div>
   </body>

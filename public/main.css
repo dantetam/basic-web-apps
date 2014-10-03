@@ -22,18 +22,8 @@ body {
   width: 100%;
 }
 
-#message-form #message-creator {
-  height: 20px;
-  width: 100%;
-}
-
 #comment-form #comment-body {
   height: 100px;
-  width: 100%;
-}
-
-#comment-form #comment-creator {
-  height: 20px;
   width: 100%;
 }
 

@@ -11,7 +11,7 @@ class Message
   property :likes,      Integer,  required: true
   property :dislikes,   Integer,  required: true
   property :shown,      Integer,  required: true
-  property :creator,    String,   required: true, default: "Tony Swan"
+  property :user_creator, String, required: true
   
   def addLike() 
     self.likes += 1 
@@ -24,6 +24,21 @@ class Message
   end
 end
 
+class User
+  include DataMapper::Resource
+  property :id,       Serial
+  property :name,     String, required: true
+  property :password, String, required: true
+  
+  def self.find_by_name(name)
+    self.first(:name => name)
+  end
+  
+  def self.find_by_id(id)
+    self.first(:id => id)
+  end
+end
+
 class Comment
   include DataMapper::Resource
   property :id,         Serial
@@ -32,7 +47,7 @@ class Comment
   property :likes,      Integer,  required: true
   property :dislikes,   Integer,  required: true
   property :shown,      Integer,  required: true
-  property :creator,    String,   required: true, default: "Tony Swan"
+  property :user_creator, String, required: true
   
   property :parentId,   Integer,  required: true
   
@@ -50,12 +65,23 @@ end
 DataMapper.finalize()
 DataMapper.auto_upgrade!()
 
+enable :sessions
 
+def current_user
+  # Return nil if no user is logged in
+  return nil unless session[:user_id] != nil
+  # If @current_user is undefined, define it by
+  # fetching it from the database.
+  @current_user = User.find_by_id(session[:user_id])
+end
 
 get("/") do
   records = Message.all(order: :created_at.desc)
   records2 = Comment.all(order: :created_at.desc)
-  erb(:index, locals: { messages: records, comments: records2 })
+  records3 = User.all()
+  puts session[:user_id]
+  user = User.find_by_id(session[:user_id])
+  erb(:index, locals: { messages: records, comments: records2, users: records3, loggedUser: user } )
 end
 
 post ("/messageLike/*") do |id|
@@ -104,15 +130,44 @@ post ("/commentImplode/*") do |id|
   redirect("/")
 end
 
+post("/register") do
+  username = params["username"]
+  password = params["password"]
+  
+  user = User.create(name: username, password: password)
+  user.save
+  #current_user = user
+  redirect("/")
+end
+
+post("/signin") do
+  username = params["username"]
+  password = params["password"]
+  
+  user = User.find_by_name(username)
+  if user.password == password then
+    session[:user_id] = user.id
+    #puts session[:user_id]
+    #@current_user = user
+    #records = Message.all(order: :created_at.desc)
+    #records2 = Comment.all(order: :created_at.desc)
+    #records3 = User.all()
+    #erb(:index, :locals => { messages: records, comments: records2, users: records3, :loggedUser => user })
+    #erb(:index, locals: { messages: records, comments: records2, users: records3, loggedUser: user })
+    #redirect("/")
+    #puts user.id
+  end
+  
+  redirect("/")
+end
+
 post("/messages") do
 
   message_body = params["body"]
-  c = params["creator"].to_s
-  if c == "" or c.include? " " then
-    c = "Tony Swan"
-  end
   
-  message = Message.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0, shown: 1, creator: c)
+  user = User.find_by_id(session[:user_id]);
+
+  message = Message.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0, shown: 1, user_creator: user.name)
 
   if message.saved?
     redirect("/")
@@ -123,12 +178,8 @@ end
 
 post("/comments/*") do |id|
   
-  c = params["creator"].to_s
-  if c == "" or c.include? " " then
-    c = "Tony Swan"
-  end
-  
-  comment = Comment.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0, shown: 1, creator: c, parentId: id)
+  user = User.find_by_id(session[:user_id]);
+  comment = Comment.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0, shown: 1, user_creator: user.name, parentId: id)
   
   if comment.saved?
     redirect("/")
