@@ -8,14 +8,12 @@ class Message
   property :id,         Serial
   property :body,       Text,     required: true
   property :created_at, DateTime, required: true
-  property :likes,      Integer,  required: true
-  property :dislikes,   Integer,  required: true
+  #property :likes,      Integer,  required: true
+  #property :likes,      String,   required: true
+  #property :dislikes,   Integer,  required: true
   property :shown,      Integer,  required: true
-  property :user_creator, String, required: true
+  property :user_id,    Integer,  required: true
   
-  def addLike() 
-    self.likes += 1 
-  end
   def subLike() 
     self.dislikes += 1 
   end
@@ -44,10 +42,11 @@ class Comment
   property :id,         Serial
   property :body,       Text,     required: true
   property :created_at, DateTime, required: true
-  property :likes,      Integer,  required: true
-  property :dislikes,   Integer,  required: true
-  property :shown,      Integer,  required: true
-  property :user_creator, String, required: true
+  #property :likes,      Integer,  required: true, default: 0
+  #property :likes,     Array,    required: true, default: Array.new 
+  #property :dislikes,   Integer,  required: true, default: 0
+  property :shown,      Integer,  required: true, default: 1
+  property :user_id,    Integer,  required: true
   
   property :parentId,   Integer,  required: true
   
@@ -60,6 +59,13 @@ class Comment
   def hide()
     self.shown = 0
   end
+end
+
+class Like
+  include DataMapper::Resource
+  property :id,         Serial,  required: true
+  property :user_id,    Integer, required: true
+  property :message_id, Integer, required: true
 end
 
 DataMapper.finalize()
@@ -79,24 +85,23 @@ get("/") do
   records = Message.all(order: :created_at.desc)
   records2 = Comment.all(order: :created_at.desc)
   records3 = User.all()
+  records4 = Like.all()
   puts session[:user_id]
   user = User.find_by_id(session[:user_id])
-  erb(:index, locals: { messages: records, comments: records2, users: records3, loggedUser: user } )
+  erb(:index, locals: { messages: records, comments: records2, users: records3, loggedUser: user, likes: records4 } )
 end
 
-post ("/messageLike/*") do |id|
+post ("/messageLike/*/*") do |id,userId|
   records = Message.all(order: :created_at.desc)
   message = Message.get(id)
-  message.addLike()
-  message.save
-  redirect("/")
-end
-
-post ("/messageHate/*") do |id|
-  records = Message.all(order: :created_at.desc)
-  message = Message.get(id)
-  message.subLike()
-  message.save
+  
+  user = User.find_by_id(userId)
+  #message.likes.insert(user.likes.length, user.name << ",")
+  
+  like = Like.new(message_id: id, user_id: userId);
+  like.save
+  
+  #message.save
   redirect("/")
 end
 
@@ -134,9 +139,11 @@ post("/register") do
   username = params["username"]
   password = params["password"]
   
-  user = User.create(name: username, password: password)
-  user.save
-  #current_user = user
+  if User.find_by_name(username) == nil then
+    user = User.create(name: username, password: password)
+    user.save
+  end
+  
   redirect("/")
 end
 
@@ -147,15 +154,6 @@ post("/signin") do
   user = User.find_by_name(username)
   if user.password == password then
     session[:user_id] = user.id
-    #puts session[:user_id]
-    #@current_user = user
-    #records = Message.all(order: :created_at.desc)
-    #records2 = Comment.all(order: :created_at.desc)
-    #records3 = User.all()
-    #erb(:index, :locals => { messages: records, comments: records2, users: records3, :loggedUser => user })
-    #erb(:index, locals: { messages: records, comments: records2, users: records3, loggedUser: user })
-    #redirect("/")
-    #puts user.id
   end
   
   redirect("/")
@@ -163,23 +161,27 @@ end
 
 post("/messages") do
 
-  message_body = params["body"]
-  
   user = User.find_by_id(session[:user_id]);
 
-  message = Message.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0, shown: 1, user_creator: user.name)
-
-  if message.saved?
-    redirect("/")
-  else
-    erb(:error)
-  end
+  message = Message.create(body: params["body"], created_at: DateTime.now, shown: 1, user_id: user.id)
+  #message = Message.new(params["body"], DateTime.now, 0, 1, user.name)
+  #message.likes = Array.new
+  
+  #message = Message.create
+  #message.body = params["body"]
+  #message.created_at = DateTime.now
+  #message.dislikes = 0
+  #message.shown = 1
+  #message.user_creator = user.name
+  
+  message.save
+  redirect("/")
 end
 
 post("/comments/*") do |id|
   
   user = User.find_by_id(session[:user_id]);
-  comment = Comment.create(body: params["body"], created_at: DateTime.now, likes: 0, dislikes: 0, shown: 1, user_creator: user.name, parentId: id)
+  comment = Comment.create(body: params["body"], created_at: DateTime.now, shown: 1, user_id: user.id, parentId: id)
   
   if comment.saved?
     redirect("/")

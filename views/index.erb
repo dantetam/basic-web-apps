@@ -48,7 +48,14 @@
               <li>
                 <div class="message-body">
                   <p><%= message.body %></p>
-                  <p><%= "Posted by " << message.user_creator << "; " << message.likes.to_s << "+/" << message.dislikes.to_s << "-" %></p>
+                  <p><%= "Posted by " << users.get(message.user_id).name %></p>
+                </div>
+                <div class="message-likes">
+                  <% likes.each do |like| %>
+                    <% if like.message_id == message.id then %>
+                      <p><%= users.get(like.user_id).name << " likes this." %></p>
+                    <% end %>
+                  <% end %>
                 </div>
                 <div>
                   <!--
@@ -59,7 +66,7 @@
                     <input type="submit" value="Submit">
                   </form>
                   -->
-                  <form action="/messageLike/<%= message.id %>" method="POST">
+                  <form action=<%= "/messageLike/" << message.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
                     <button type="submit">Like</button>
                   </form>
                   <form action="/messageHate/<%= message.id %>" method="POST">
@@ -78,7 +85,7 @@
                       <p><%= comment.body %></p>
                     </div>
                     <div class="comment-timestamp">
-                      <p><%= "Commented by " << loggedUser.name << " at " << message.created_at.strftime("%B %d, %Y at %l:%M%p") << " " << comment.likes.to_s << "+/" << comment.dislikes.to_s << "-" %></p>
+                      <p><%= "Commented by " << users.get(comment.user_id).name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
                       <div>
                         <form action="/commentLike/<%= comment.id %>" method="POST">
                           <button type="submit">Like</button>
