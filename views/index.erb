@@ -64,9 +64,6 @@
                   <form action=<%= "/messageLike/" << message.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
                     <button type="submit">Like</button>
                   </form>
-                  <form action="/messageHate/<%= message.id %>" method="POST">
-                    <button type="submit">Hate</button>
-                  </form>
                   <form action="/messageImplode/<%= message.id %>" method="POST">
                     <button type="submit">IMPLODE</button>
                   </form>
@@ -82,11 +79,8 @@
                     <div class="comment-timestamp">
                       <p><%= "Commented by " << users.get(comment.user_id).name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
                       <div>
-                        <form action="/commentLike/<%= comment.id %>" method="POST">
+                        <form action=<%= "/commentLike/" << comment.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
                           <button type="submit">Like</button>
-                        </form>
-                        <form action="/commentHate/<%= comment.id %>" method="POST">
-                          <button type="submit">Hate</button>
                         </form>
                         <form action="/commentImplode/<%= comment.id %>" method="POST">
                           <button type="submit">IMPLODE</button>

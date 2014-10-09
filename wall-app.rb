@@ -19,7 +19,7 @@ class Message
     num = 0
     likes = Like.all()
     likes.each do |like|
-      if like.message_id == self.id then
+      if like.message_id == self.id and like.type == "message" then
         temp += User.get(like.user_id).name << ", " 
         num = num + 1
       end
@@ -34,9 +34,7 @@ class Message
     end
     return temp
   end
-  def subLike() 
-    self.dislikes += 1 
-  end
+
   def hide()
     self.shown = 0
   end
@@ -70,12 +68,6 @@ class Comment
   
   property :parentId,   Integer,  required: true
   
-  def addLike() 
-    self.likes += 1 
-  end
-  def subLike() 
-    self.dislikes += 1 
-  end
   def hide()
     self.shown = 0
   end
@@ -83,10 +75,20 @@ end
 
 class Like
   include DataMapper::Resource
+  property :id,         Serial
+  property :type,       String,  required: true
+  property :user_id,    Integer, required: true
+  property :message_id, Integer, required: true
+end
+
+=begin
+class Hate
+  include DataMapper::Resource
   property :id,         Serial,  required: true
   property :user_id,    Integer, required: true
   property :message_id, Integer, required: true
 end
+=end
 
 DataMapper.finalize()
 DataMapper.auto_upgrade!()
@@ -118,7 +120,7 @@ post ("/messageLike/*/*") do |id,userId|
   user = User.find_by_id(userId)
   #message.likes.insert(user.likes.length, user.name << ",")
   
-  like = Like.new(message_id: id, user_id: userId);
+  like = Like.new(message_id: id, user_id: userId, type: "message");
   like.save
   
   #message.save
@@ -133,20 +135,28 @@ post ("/messageImplode/*") do |id|
   redirect("/")
 end
 
-post ("/commentLike/*") do |id|
-  puts id
+post ("/commentLike/*/*") do |id,userId|
+  records = Comment.all(order: :created_at.desc)
   comment = Comment.get(id)
-  comment.addLike()
-  comment.save
+  
+  user = User.find_by_id(userId)
+  #message.likes.insert(user.likes.length, user.name << ",")
+  
+  like = Like.new(message_id: id, user_id: userId, type: "comment");
+  like.save
+  
+  #message.save
   redirect("/")
 end
 
+=begin
 post ("/commentHate/*") do |id|
   comment = Comment.get(id)
   comment.subLike()
   comment.save
   redirect("/")
 end
+=end
 
 post ("/commentImplode/*") do |id|
   comment = Comment.get(id)
