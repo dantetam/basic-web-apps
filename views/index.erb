@@ -51,12 +51,7 @@
                   <p><%= "Posted by " << users.get(message.user_id).name %></p>
                 </div>
                 <div class="message-likes">
-                  <% likes.each do |like| %>
-                    <% if like.message_id == message.id then %>
-                      <p><%= users.get(like.user_id).name << " likes this." %></p>
-                    <% end %>
-                  <% end %>
-                </div>
+                  <p><%= message.likes_tostring %></p>
                 <div>
                   <!--
                   <form name="input" action="/submitOpinion" method="get">

@@ -14,6 +14,26 @@ class Message
   property :shown,      Integer,  required: true
   property :user_id,    Integer,  required: true
   
+  def likes_tostring()
+    temp = ""
+    num = 0
+    likes = Like.all()
+    likes.each do |like|
+      if like.message_id == self.id then
+        temp += User.get(like.user_id).name << ", " 
+        num = num + 1
+      end
+    end
+    if num == 0 then 
+      return "No likes."
+    elsif num == 1 then
+      temp = temp.delete! ","
+      temp += "likes this."
+    else
+      temp += " like this."
+    end
+    return temp
+  end
   def subLike() 
     self.dislikes += 1 
   end
