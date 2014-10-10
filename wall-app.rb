@@ -68,6 +68,27 @@ class Comment
   
   property :parentId,   Integer,  required: true
   
+  def likes_tostring()
+    temp = ""
+    num = 0
+    likes = Like.all()
+    likes.each do |like|
+      if like.message_id == self.id and like.type == "comment" then
+        temp += User.get(like.user_id).name << ", " 
+        num = num + 1
+      end
+    end
+    if num == 0 then 
+      return "No likes."
+    elsif num == 1 then
+      temp = temp.delete! ","
+      temp += "likes this."
+    else
+      temp += " like this."
+    end
+    return temp
+  end
+  
   def hide()
     self.shown = 0
   end
@@ -79,6 +100,8 @@ class Like
   property :type,       String,  required: true
   property :user_id,    Integer, required: true
   property :message_id, Integer, required: true
+  
+  validates_uniqueness_of :user_id, :message_id
 end
 
 =begin
@@ -104,26 +127,33 @@ def current_user
 end
 
 get("/") do
-  records = Message.all(order: :created_at.desc)
-  records2 = Comment.all(order: :created_at.desc)
-  records3 = User.all()
-  records4 = Like.all()
-  puts session[:user_id]
+  messages = Message.all(order: :created_at.desc)
+  comments = Comment.all(order: :created_at.desc)
+  users = User.all()
+  likes = Like.all()
+  #puts session[:user_id]
   user = User.find_by_id(session[:user_id])
-  erb(:index, locals: { messages: records, comments: records2, users: records3, loggedUser: user, likes: records4 } )
+  erb(:index, locals: { messages: messages, comments: comments, users: users, loggedUser: user, likes: likes } )
+end
+
+get("/users/*") do |userId|
+  user = User.get(userId)
+  if user != nil then
+    erb(:user_profile, locals: { user: user } )
+  else 
+    redirect("/")
+  end
 end
 
 post ("/messageLike/*/*") do |id,userId|
+  
   records = Message.all(order: :created_at.desc)
   message = Message.get(id)
   
   user = User.find_by_id(userId)
   #message.likes.insert(user.likes.length, user.name << ",")
   
-  like = Like.new(message_id: id, user_id: userId, type: "message");
-  like.save
-  
-  #message.save
+  new_like = Like.create(message_id: id, user_id: userId, type: "message");
   redirect("/")
 end
 
@@ -186,6 +216,10 @@ post("/signin") do
     session[:user_id] = user.id
   end
   
+  redirect("/")
+end
+
+post("/redirectHome") do
   redirect("/")
 end
 

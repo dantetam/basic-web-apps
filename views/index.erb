@@ -78,6 +78,7 @@
                     </div>
                     <div class="comment-timestamp">
                       <p><%= "Commented by " << users.get(comment.user_id).name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
+                      <p><%= comment.likes_tostring() %></p>
                       <div>
                         <form action=<%= "/commentLike/" << comment.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
                           <button type="submit">Like</button>
