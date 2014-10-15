@@ -12,7 +12,10 @@
         <button type="submit">To community wall</button>
       </form>
       <h1><%= user.name %></h1>
-
+      <p><%= user.name + " is subscribed to " + get_subscribed_to(user) + "." %></p>
+      <form id="message-form" method="POST" action=<%= "/subscribe/" + loggedUser.id.to_s + "/" + user.id.to_s %>>
+        <button type="submit">Subscribe to this user</button>
+      </form>
     </div>
   </body>
 </html>

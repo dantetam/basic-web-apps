@@ -2,6 +2,7 @@ require "sinatra"     # Load the Sinatra web framework
 require "data_mapper" # Load the DataMapper database library
 
 require "./database_setup"
+require "dm-validations";
 
 class Message
   include DataMapper::Resource
@@ -13,27 +14,21 @@ class Message
   has n, :comments
   has n, :messageLikes
   belongs_to :user
+  #validates_length_of :name, :min => 1
   
   def hide()
     self.shown = 0
   end
-  
 end
 
-class User
+=begin
+class UserProfile
   include DataMapper::Resource
-  property :id,       Serial
-  property :name,     String, required: true
-  property :password, String, required: true
+  property :id, Serial
   
-  def self.find_by_name(name)
-    self.first(:name => name)
-  end
-  
-  def self.find_by_id(id)
-    self.first(:id => id)
-  end
+  has 1, :user
 end
+=end
 
 class Comment
   include DataMapper::Resource
@@ -43,7 +38,9 @@ class Comment
   property :shown,      Integer,  required: true, default: 1
   
   has n, :commentLikes
+  belongs_to :user
   belongs_to :message
+  #validates_length_of :body, :min => 1
 
   def hide()
     self.shown = 0
@@ -55,7 +52,7 @@ class MessageLike
   property :id,         Serial
   belongs_to :user
   belongs_to :message 
-  validates_uniqueness_of :user, :message
+  validates_uniqueness_of :user, scope: :message
 end
 
 class CommentLike
@@ -63,7 +60,36 @@ class CommentLike
   property :id,         Serial
   belongs_to :user
   belongs_to :comment 
-  validates_uniqueness_of :user, :comment
+  validates_uniqueness_of :user, scope: :comment
+end
+
+class User
+  include DataMapper::Resource
+  property :id,       Serial
+  property :name,     String, required: true
+  property :password, String, required: true
+  
+  #has 1, :userProfile
+  has n, :subscriptions_out, "Subscription", :child_key => [ :from_user_id ]
+  #has n, :subscriptions_in,  "Subscription"
+  has n, :followings, "User", :through => :subscriptions_out, :via => :to_user
+  validates_uniqueness_of :name
+  #validates_length_of :name, :within => 1..16
+    
+  def self.find_by_name(name)
+    self.first(:name => name)
+  end
+  
+  def self.find_by_id(id)
+    self.first(:id => id)
+  end
+end
+
+class Subscription
+  include DataMapper::Resource
+  property :id, Serial
+  belongs_to :from_user, "User"
+  belongs_to :to_user,   "User"
 end
 
 =begin
@@ -98,7 +124,21 @@ def get_message_likes(text)
   when 2
     return likes[0].user.name + " and " + likes[1].user.name + " like this."
   else
-    return likes[0..-2].map { |like| like.user.name }.join(", ") + "and " + likes[-1] + " like this.";
+    return (likes[0..(likes.length-2)].map { |like| like.user.name }.join(", ")).to_s + ", and " + (likes[(likes.length-1)].user.name.to_s) + " like this.";
+  end
+end
+
+def get_subscribed_to(user)
+  subs = user.followings
+  case subs.length
+  when 0
+    return "no one"
+  when 1
+    return subs[0].name
+  when 2
+    return subs[0].name + " and " + subs[1].name
+  else
+    return (subs[0..(subs.length-2)].map { |subscription| subscription.name }.join(", ")).to_s + ", and " + (subs[subs.length-1].name.to_s)
   end
 end
 
@@ -113,7 +153,7 @@ end
 get("/users/*") do |userId|
   user = User.get(userId)
   if user != nil then
-    erb(:user_profile, locals: { user: user } )
+    erb(:user_profile, locals: { user: user, loggedUser: User.find_by_id(session[:user_id]) } )
   else 
     redirect("/")
   end
@@ -174,6 +214,11 @@ post("/signin") do
     session[:user_id] = user.id
   end
   
+  redirect("/")
+end
+
+post("/subscribe/*/*") do |from,to|
+  subscription = Subscription.create(from_user: User.get(from), to_user: User.get(to))
   redirect("/")
 end
 

@@ -77,7 +77,7 @@
                   Posted on <%= message.created_at.strftime("%B %d, %Y at %l:%M%p") %>
                 </div>
                 <% comments.each do |comment| %>
-                  <% if comment.parentId.to_i == message.id and comment.shown == 1 then %>
+                  <% if comment.message == message then %>
                     <div class="comment-body">
                       <p><%= comment.body %></p>
                     </div>
