@@ -43,68 +43,81 @@
         <button type="submit">Sign in as a guest!</button>
       </form>
       -->
-      <% if messages.empty? %>
-        <h2>No messages.</h2>
-      <% else %>
-        <h2>Messages</h2>
-        <ol class="message-list">
-          <% messages.each do |message| %>
-            <% if message.shown == 1 then %>
-              <li>
-                <div class="message-body">
-                  <p><%= message.body %></p>
-                  <p><%= "Posted by " << users.get(message.user.id).name %></p>
-                </div>
-                <div class="message-likes">
-                  <p><%= get_message_likes(message) %></p>
-                <div>
-                  <!--
-                  <form name="input" action="/submitOpinion" method="get">
-                    <input type="checkbox" name="opinion" value=<#%= "Like" << messages.index(message).to_s %> >Like
-                    <input type="checkbox" name="opinion" value=<#%= "Hate" << messages.index(message).to_s %> >Hate
-                    <input type="checkbox" name="opinion" value=<#%= "Impl" << messages.index(message).to_s %> >Implode
-                    <input type="submit" value="Submit">
-                  </form>
-                  -->
-                  <form action=<%= "/messageLike/" << message.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
-                    <button type="submit">Like</button>
-                  </form>
-                  <form action="/messageImplode/<%= message.id %>" method="POST">
-                    <button type="submit">IMPLODE</button>
-                  </form>
-                </div>
-                <div class="message-timestamp">
-                  Posted on <%= message.created_at.strftime("%B %d, %Y at %l:%M%p") %>
-                </div>
-                <% comments.each do |comment| %>
-                  <% if comment.message == message then %>
-                    <div class="comment-body">
-                      <p><%= comment.body %></p>
-                    </div>
-                    <div class="comment-timestamp">
-                      <p><%= "Commented by " << users.get(comment.user.id).name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
-
-                      <div>
-                        <form action=<%= "/commentLike/" << comment.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
-                          <button type="submit">Like</button>
-                        </form>
-                        <form action="/commentImplode/<%= comment.id %>" method="POST">
-                          <button type="submit">IMPLODE</button>
-                        </form>
+      <% if messages != nil %>
+        <% if messages.empty? %>
+          <h2>No messages from you.</h2>
+        <% else %>
+          <h2>Your messages:</h2>
+          <ol class="message-list">
+            <% messages.each do |message| %>
+              <% if message.shown == 1 then %>
+                <li>
+                  <div class="message-body">
+                    <p><%= message.body %></p>
+                    <p><%= "Posted by " << users.get(message.user.id).name %></p>
+                  </div>
+                  <div class="message-likes">
+                    <p><%= get_message_likes(message) %></p>
+                  <div>
+                    <!--
+                    <form name="input" action="/submitOpinion" method="get">
+                      <input type="checkbox" name="opinion" value=<#%= "Like" << messages.index(message).to_s %> >Like
+                      <input type="checkbox" name="opinion" value=<#%= "Hate" << messages.index(message).to_s %> >Hate
+                      <input type="checkbox" name="opinion" value=<#%= "Impl" << messages.index(message).to_s %> >Implode
+                      <input type="submit" value="Submit">
+                    </form>
+                    -->
+                    <form action=<%= "/messageLike/" << message.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
+                      <button type="submit">Like</button>
+                    </form>
+                    <form action="/messageImplode/<%= message.id %>" method="POST">
+                      <button type="submit">IMPLODE</button>
+                    </form>
+                  </div>
+                  <div class="message-timestamp">
+                    Posted on <%= message.created_at.strftime("%B %d, %Y at %l:%M%p") %>
+                  </div>
+                  <% comments.each do |comment| %>
+                    <% if comment.message == message then %>
+                      <div class="comment-body">
+                        <p><%= comment.body %></p>
                       </div>
-                    </div>
+                      <div class="comment-timestamp">
+                        <p><%= "Commented by " << users.get(comment.user.id).name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
+  
+                        <div>
+                          <form action=<%= "/commentLike/" << comment.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
+                            <button type="submit">Like</button>
+                          </form>
+                          <form action="/commentImplode/<%= comment.id %>" method="POST">
+                            <button type="submit">IMPLODE</button>
+                          </form>
+                        </div>
+                      </div>
+                    <% end %>
                   <% end %>
-                <% end %>
-                <div>
-                  <form id="comment-form" method="POST" action="/comments/<%= message.id %>">
-                    <textarea id="comment-body" name="body" placeholder="Enter a comment to this message."></textarea>
-                    <button type="submit">Post</button>
-                  </form>
-                </div>
-              </li>
+                  <div>
+                    <form id="comment-form" method="POST" action="/comments/<%= message.id %>">
+                      <textarea id="comment-body" name="body" placeholder="Enter a comment to this message."></textarea>
+                      <button type="submit">Post</button>
+                    </form>
+                  </div>
+                </li>
+              <% end %>
             <% end %>
-          <% end %>
-        </ol>
+          </ol>
+        <% end %>
+      <% end %>
+      <% if inbox_messages != nil then %>
+        <h2>Your followings:</h2>
+        <% inbox_messages.each do |message| %>
+          <div class="inbox-message-body">
+            <p><%= message.body %></p>
+            <p><%= "Posted by " << users.get(message.user.id).name %></p>
+          </div>
+        <% end %>
+      <% else %>  
+        <h2>No messages available from subscribers.</h2>
       <% end %>
       <% if users.length == 0 then %>
         <h2>No registered users.</h2>

@@ -4,12 +4,14 @@ require "data_mapper" # Load the DataMapper database library
 require "./database_setup"
 require "dm-validations";
 
+#An announcement to all subscribers
 class Message
   include DataMapper::Resource
   property :id,         Serial
   property :body,       Text,     required: true
   property :created_at, DateTime, required: true
   property :shown,      Integer,  required: true
+  #property :type,       Integer,  required: true #0: created by a user, #1 (or any other number): sent to the user's inbox
   
   has n, :comments
   has n, :messageLikes
@@ -20,6 +22,15 @@ class Message
     self.shown = 0
   end
 end
+
+#The user's copy of the announcement
+=begin
+class InboxMessage
+  include DataMapper::Resource
+  
+  
+end
+=end
 
 =begin
 class UserProfile
@@ -72,7 +83,10 @@ class User
   #has 1, :userProfile
   has n, :subscriptions_out, "Subscription", :child_key => [ :from_user_id ]
   #has n, :subscriptions_in,  "Subscription"
-  has n, :followings, "User", :through => :subscriptions_out, :via => :to_user
+  has n, :followings,        "User",         :through => :subscriptions_out, :via => :to_user
+  has n, :messages,          "Message"
+  has n, :inbox_messages,    "Message",      :through => :followings, :via => :messages
+  
   validates_uniqueness_of :name
   #validates_length_of :name, :within => 1..16
     
@@ -147,7 +161,11 @@ get("/") do
   comments = Comment.all(order: :created_at.desc)
   users = User.all()
   user = User.find_by_id(session[:user_id])
-  erb(:index, locals: { messages: messages, comments: comments, users: users, loggedUser: user } )
+  if user != nil then
+    erb(:index, locals: { messages: user.messages, inbox_messages: user.inbox_messages, comments: comments, users: users, loggedUser: user } )
+  else
+    erb(:index, locals: { messages: nil, inbox_messages: nil, comments: comments, users: users, loggedUser: nil } )
+  end
 end
 
 get("/users/*") do |userId|
