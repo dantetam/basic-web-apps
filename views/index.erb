@@ -38,8 +38,13 @@
         <textarea id="sign-in-password" name="password" placeholder="Password"></textarea>
         <button type="submit">Sign in!</button>
       </form>
+      <!--
+      <form id="guest-log-in" method="POST" action="/signinguest">
+        <button type="submit">Sign in as a guest!</button>
+      </form>
+      -->
       <% if messages.empty? %>
-        <h2>Sorry, no messages. :(</h2>
+        <h2>No messages.</h2>
       <% else %>
         <h2>Messages</h2>
         <ol class="message-list">
@@ -48,10 +53,10 @@
               <li>
                 <div class="message-body">
                   <p><%= message.body %></p>
-                  <p><%= "Posted by " << users.get(message.user_id).name %></p>
+                  <p><%= "Posted by " << users.get(message.user.id).name %></p>
                 </div>
                 <div class="message-likes">
-                  <p><%= message.likes_tostring %></p>
+                  <p><%= get_message_likes(message) %></p>
                 <div>
                   <!--
                   <form name="input" action="/submitOpinion" method="get">
@@ -77,8 +82,8 @@
                       <p><%= comment.body %></p>
                     </div>
                     <div class="comment-timestamp">
-                      <p><%= "Commented by " << users.get(comment.user_id).name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
-                      <p><%= comment.likes_tostring() %></p>
+                      <p><%= "Commented by " << users.get(comment.user.id).name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
+
                       <div>
                         <form action=<%= "/commentLike/" << comment.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
                           <button type="submit">Like</button>
@@ -101,9 +106,13 @@
           <% end %>
         </ol>
       <% end %>
-      <h2>Registered Users</h2>
-      <% users.each do |user| %>
-        <p><%= user.name %></p>
+      <% if users.length == 0 then %>
+        <h2>No registered users.</h2>
+      <% else %>
+        <h2>Registered Users</h2>
+        <% users.each do |user| %>
+          <a href=<%= "/users/" << user.id.to_s %>><%= user.name %></a>
+        <% end %>
       <% end %>
     </div>
   </body>

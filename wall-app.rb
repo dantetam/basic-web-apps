@@ -8,36 +8,16 @@ class Message
   property :id,         Serial
   property :body,       Text,     required: true
   property :created_at, DateTime, required: true
-  #property :likes,      Integer,  required: true
-  #property :likes,      String,   required: true
-  #property :dislikes,   Integer,  required: true
   property :shown,      Integer,  required: true
-  property :user_id,    Integer,  required: true
   
-  def likes_tostring()
-    temp = ""
-    num = 0
-    likes = Like.all()
-    likes.each do |like|
-      if like.message_id == self.id and like.type == "message" then
-        temp += User.get(like.user_id).name << ", " 
-        num = num + 1
-      end
-    end
-    if num == 0 then 
-      return "No likes."
-    elsif num == 1 then
-      temp = temp.delete! ","
-      temp += "likes this."
-    else
-      temp += " like this."
-    end
-    return temp
-  end
-
+  has n, :comments
+  has n, :messageLikes
+  belongs_to :user
+  
   def hide()
     self.shown = 0
   end
+  
 end
 
 class User
@@ -60,48 +40,30 @@ class Comment
   property :id,         Serial
   property :body,       Text,     required: true
   property :created_at, DateTime, required: true
-  #property :likes,      Integer,  required: true, default: 0
-  #property :likes,     Array,    required: true, default: Array.new 
-  #property :dislikes,   Integer,  required: true, default: 0
   property :shown,      Integer,  required: true, default: 1
-  property :user_id,    Integer,  required: true
   
-  property :parentId,   Integer,  required: true
-  
-  def likes_tostring()
-    temp = ""
-    num = 0
-    likes = Like.all()
-    likes.each do |like|
-      if like.message_id == self.id and like.type == "comment" then
-        temp += User.get(like.user_id).name << ", " 
-        num = num + 1
-      end
-    end
-    if num == 0 then 
-      return "No likes."
-    elsif num == 1 then
-      temp = temp.delete! ","
-      temp += "likes this."
-    else
-      temp += " like this."
-    end
-    return temp
-  end
-  
+  has n, :commentLikes
+  belongs_to :message
+
   def hide()
     self.shown = 0
   end
 end
 
-class Like
+class MessageLike
   include DataMapper::Resource
   property :id,         Serial
-  property :type,       String,  required: true
-  property :user_id,    Integer, required: true
-  property :message_id, Integer, required: true
-  
-  validates_uniqueness_of :user_id, :message_id
+  belongs_to :user
+  belongs_to :message 
+  validates_uniqueness_of :user, :message
+end
+
+class CommentLike
+  include DataMapper::Resource
+  property :id,         Serial
+  belongs_to :user
+  belongs_to :comment 
+  validates_uniqueness_of :user, :comment
 end
 
 =begin
@@ -126,14 +88,26 @@ def current_user
   @current_user = User.find_by_id(session[:user_id])
 end
 
+def get_message_likes(text)
+  likes = text.messageLikes or text.commentLikes
+  case likes.length
+  when 0
+    return "No likes."
+  when 1
+    return likes[0].user.name + " likes this."
+  when 2
+    return likes[0].user.name + " and " + likes[1].user.name + " like this."
+  else
+    return likes[0..-2].map { |like| like.user.name }.join(", ") + "and " + likes[-1] + " like this.";
+  end
+end
+
 get("/") do
   messages = Message.all(order: :created_at.desc)
   comments = Comment.all(order: :created_at.desc)
   users = User.all()
-  likes = Like.all()
-  #puts session[:user_id]
   user = User.find_by_id(session[:user_id])
-  erb(:index, locals: { messages: messages, comments: comments, users: users, loggedUser: user, likes: likes } )
+  erb(:index, locals: { messages: messages, comments: comments, users: users, loggedUser: user } )
 end
 
 get("/users/*") do |userId|
@@ -146,14 +120,7 @@ get("/users/*") do |userId|
 end
 
 post ("/messageLike/*/*") do |id,userId|
-  
-  records = Message.all(order: :created_at.desc)
-  message = Message.get(id)
-  
-  user = User.find_by_id(userId)
-  #message.likes.insert(user.likes.length, user.name << ",")
-  
-  new_like = Like.create(message_id: id, user_id: userId, type: "message");
+  new_like = MessageLike.create(message: Message.get(id), user: User.get(userId));
   redirect("/")
 end
 
@@ -166,16 +133,7 @@ post ("/messageImplode/*") do |id|
 end
 
 post ("/commentLike/*/*") do |id,userId|
-  records = Comment.all(order: :created_at.desc)
-  comment = Comment.get(id)
-  
-  user = User.find_by_id(userId)
-  #message.likes.insert(user.likes.length, user.name << ",")
-  
-  like = Like.new(message_id: id, user_id: userId, type: "comment");
-  like.save
-  
-  #message.save
+  new_like = CommentLike.create(comment: Comment.get(id), user: User.get(userId));
   redirect("/")
 end
 
@@ -219,38 +177,36 @@ post("/signin") do
   redirect("/")
 end
 
+=begin
+post("/signinguest") do
+  user = User.find_by_name("guest")
+  if user == nil then
+    user = User.create(name: "guest", password: "")
+  else
+    session[:user_id] = user.id
+  end
+  redirect("/")
+end
+=end
+
 post("/redirectHome") do
   redirect("/")
 end
 
 post("/messages") do
-
-  user = User.find_by_id(session[:user_id]);
-
-  message = Message.create(body: params["body"], created_at: DateTime.now, shown: 1, user_id: user.id)
-  #message = Message.new(params["body"], DateTime.now, 0, 1, user.name)
-  #message.likes = Array.new
-  
-  #message = Message.create
-  #message.body = params["body"]
-  #message.created_at = DateTime.now
-  #message.dislikes = 0
-  #message.shown = 1
-  #message.user_creator = user.name
-  
-  message.save
-  redirect("/")
+  message = Message.create(body: params["body"], created_at: DateTime.now, shown: 1, user: User.find_by_id(session[:user_id]))
+  if message.saved?
+    redirect("/")
+  else
+    erb(:error)
+  end
 end
 
-post("/comments/*") do |id|
-  
-  user = User.find_by_id(session[:user_id]);
-  comment = Comment.create(body: params["body"], created_at: DateTime.now, shown: 1, user_id: user.id, parentId: id)
-  
+post("/comments/*") do |message_id|
+  comment = Comment.create(body: params["body"], created_at: DateTime.now, shown: 1, user: User.find_by_id(session[:user_id]), message: Message.get(message_id))
   if comment.saved?
     redirect("/")
   else
     erb(:error)
   end
-  
 end
