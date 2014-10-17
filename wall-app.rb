@@ -104,6 +104,8 @@ class Subscription
   property :id, Serial
   belongs_to :from_user, "User"
   belongs_to :to_user,   "User"
+  
+  validates_uniqueness_of :from_user, scope: :to_user
 end
 
 =begin
@@ -236,7 +238,9 @@ post("/signin") do
 end
 
 post("/subscribe/*/*") do |from,to|
-  subscription = Subscription.create(from_user: User.get(from), to_user: User.get(to))
+  if from != to then
+    subscription = Subscription.create(from_user: User.get(from), to_user: User.get(to))
+  end
   redirect("/")
 end
 
@@ -254,6 +258,15 @@ end
 
 post("/redirectHome") do
   redirect("/")
+end
+
+post("/searchUser") do
+  user = User.find_by_name(params["username"])
+  if user != nil then
+    redirect("/users/" << (user.id.to_s))
+  else 
+    redirect("/")
+  end
 end
 
 post("/messages") do

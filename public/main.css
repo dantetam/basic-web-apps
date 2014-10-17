@@ -22,9 +22,29 @@ body {
   width: 100%;
 }
 
+#users-area #search-users {
+  height: 20px;
+  width: 100%;
+}
+
 #comment-form #comment-body {
   height: 100px;
   width: 100%;
+}
+
+/*
+.inbox-message-list .inbox-message-body {
+  font-size: 12px;
+  font-style: italic;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  text-align: right;
+}
+*/
+
+#inbox-message-form {
+  border-bottom: 1px solid black;
+  padding-bottom: 20px;
 }
 
 .message-list .message-likes {
@@ -48,7 +68,7 @@ body {
   font-style: italic;
   margin-bottom: 10px;
   margin-top: 10px;
-  text-align: left;
+  text-align: right;
 }
 
 .message-list .comment-timestamp {

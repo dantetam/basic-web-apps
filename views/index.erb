@@ -54,7 +54,6 @@
                 <li>
                   <div class="message-body">
                     <p><%= message.body %></p>
-                    <p><%= "Posted by " << users.get(message.user.id).name %></p>
                   </div>
                   <div class="message-likes">
                     <p><%= get_message_likes(message) %></p>
@@ -75,7 +74,7 @@
                     </form>
                   </div>
                   <div class="message-timestamp">
-                    Posted on <%= message.created_at.strftime("%B %d, %Y at %l:%M%p") %>
+                    <p><%= "Posted by " << users.get(message.user.id).name + " on " + message.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
                   </div>
                   <% comments.each do |comment| %>
                     <% if comment.message == message then %>
@@ -109,12 +108,22 @@
         <% end %>
       <% end %>
       <% if inbox_messages != nil then %>
-        <h2>Your followings:</h2>
-        <% inbox_messages.each do |message| %>
-          <div class="inbox-message-body">
-            <p><%= message.body %></p>
-            <p><%= "Posted by " << users.get(message.user.id).name %></p>
-          </div>
+        <% if inbox_messages.empty? then %>
+          <h2>You are not following anyone.</h2>
+        <% else %>
+          <h2>Your followings' messages:</h2>
+          <ol class="inbox-message-list">
+            <% inbox_messages.each do |message| %>
+              <% if message.shown == 1 then %>
+                <li>
+                  <div class="inbox-message-body">
+                    <p><%= message.body %></p>
+                    <p><%= "Posted by " << users.get(message.user.id).name %></p>
+                  </div>
+                </li>
+              <% end %>
+            <% end %>
+          </ol>
         <% end %>
       <% else %>  
         <h2>No messages available from subscribers.</h2>
@@ -123,6 +132,10 @@
         <h2>No registered users.</h2>
       <% else %>
         <h2>Registered Users</h2>
+        <form id="search-users" method="POST" action="/searchUser">
+          <textarea id="username" name="username" placeholder="Name"></textarea>
+          <button type="submit">Search</button>
+        </form>
         <% users.each do |user| %>
           <a href=<%= "/users/" << user.id.to_s %>><%= user.name %></a>
         <% end %>
