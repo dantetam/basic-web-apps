@@ -4,6 +4,8 @@ require "data_mapper" # Load the DataMapper database library
 require "./database_setup"
 require "dm-validations";
 
+require "tumblr_client";
+
 #An announcement to all subscribers
 class Message
   include DataMapper::Resource
@@ -101,11 +103,19 @@ end
 
 class Subscription
   include DataMapper::Resource
-  property :id, Serial
+  property :id,          Serial
   belongs_to :from_user, "User"
   belongs_to :to_user,   "User"
   
   validates_uniqueness_of :from_user, scope: :to_user
+end
+
+class TumblrSubscription
+  include DataMapper::Resource
+  
+  property :id,     Serial
+  property :tumblr_name,   String
+  belongs_to :user, "User"
 end
 
 =begin
@@ -158,6 +168,17 @@ def get_subscribed_to(user)
   end
 end
 
+# Authenticate via OAuth
+client = Tumblr::Client.new({
+  :consumer_key => 'TUlMONefwOLByGWFKJ0C3WZBWxQuvGL6Bky5fZKKHSUQANSYBM',
+  :consumer_secret => 'VrOY2THXcRn4gAollP58ymzC4xj2vK37RLwSXOy2nst0TLxVHi',
+  :oauth_token => 'oh8aQ3QamqH03X8k2OKmzJsOTYpc3pWAG4cjzstdKqyx4gBia1',
+  :oauth_token_secret => 'rI20PdcagdD9LEOej3P5zlCqvwHzClJFlvvaJj8zerhIbtRNUX'
+})
+
+#A poetry blog on tumblr
+puts client.posts 'thehappypoetess.tumblr.com', :type => 'text', :limit => 5, :filter => 'text'
+
 get("/") do
   messages = Message.all(order: :created_at.desc)
   comments = Comment.all(order: :created_at.desc)
@@ -177,6 +198,11 @@ get("/users/*") do |userId|
   else 
     redirect("/")
   end
+end
+
+get("/tumblr/*") do |tumblr_name|
+  blog = client.blog_info (tumblr_name + ".tumblr.com")
+  erb(:tumblr_profile, locals: { blog: tumblr_name + ".tumblr.com", client: client, loggedUser: User.find_by_id(session[:user_id]) } )
 end
 
 post ("/messageLike/*/*") do |id,userId|
@@ -267,6 +293,11 @@ post("/searchUser") do
   else 
     redirect("/")
   end
+end
+
+post("/tumblr") do
+  puts params["tumblrname"].to_s
+  redirect("/tumblr/" + params["tumblrname"].to_s)
 end
 
 post("/messages") do

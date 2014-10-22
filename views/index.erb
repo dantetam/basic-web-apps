@@ -140,6 +140,10 @@
           <a href=<%= "/users/" << user.id.to_s %>><%= user.name %></a>
         <% end %>
       <% end %>
+      <form id="search-tumblr" method="POST" action="/tumblr">
+        <textarea id="tumblrname" name="tumblrname" placeholder="Tumblr Blog Name"></textarea>
+        <button type="submit">Get</button>
+      </form>
     </div>
   </body>
 </html>
