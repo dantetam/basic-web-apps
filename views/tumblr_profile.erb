@@ -17,6 +17,9 @@
         <button type="submit">Subscribe to this user</button>
       </form>
       -->
+      <% (client.posts blog.to_s, :type => 'text', :limit => 5, :filter => 'text').each do |tumblr_post| %>
+        <p><%= tumblr_post %></p>
+      <% end %>
     </div>
   </body>
 </html>
