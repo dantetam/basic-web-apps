@@ -5,6 +5,7 @@ require "./database_setup"
 require "dm-validations";
 
 require "tumblr_client";
+require "json";
 
 #An announcement to all subscribers
 class Message
@@ -17,7 +18,7 @@ class Message
   
   has n, :comments
   has n, :messageLikes
-  belongs_to :user
+  belongs_to :user, "User"
   #validates_length_of :name, :min => 1
   
   def hide()
@@ -169,7 +170,7 @@ def get_subscribed_to(user)
 end
 
 # Authenticate via OAuth
-client = Tumblr::Client.new({
+$client = Tumblr::Client.new({
   :consumer_key => 'TUlMONefwOLByGWFKJ0C3WZBWxQuvGL6Bky5fZKKHSUQANSYBM',
   :consumer_secret => 'VrOY2THXcRn4gAollP58ymzC4xj2vK37RLwSXOy2nst0TLxVHi',
   :oauth_token => 'oh8aQ3QamqH03X8k2OKmzJsOTYpc3pWAG4cjzstdKqyx4gBia1',
@@ -177,7 +178,13 @@ client = Tumblr::Client.new({
 })
 
 #A poetry blog on tumblr
-puts client.posts 'thehappypoetess.tumblr.com', :type => 'text', :limit => 5, :filter => 'text'
+puts $client.posts 'thehappypoetess.tumblr.com', :type => 'text', :limit => 5, :filter => 'text'
+
+def tumblr_post(blogname)
+  hash = $client.posts blogname, :type => 'text', :limit => 5, :filter => 'text'
+  puts "hey"
+  return hash["posts"][0]["body"]
+end
 
 get("/") do
   messages = Message.all(order: :created_at.desc)
@@ -201,8 +208,8 @@ get("/users/*") do |userId|
 end
 
 get("/tumblr/*") do |tumblr_name|
-  blog = client.blog_info (tumblr_name + ".tumblr.com")
-  erb(:tumblr_profile, locals: { blog: tumblr_name + ".tumblr.com", client: client, loggedUser: User.find_by_id(session[:user_id]) } )
+  blog = $client.blog_info (tumblr_name + ".tumblr.com")
+  erb(:tumblr_profile, locals: { blog: tumblr_name + ".tumblr.com", client: $client, loggedUser: User.find_by_id(session[:user_id]) } )
 end
 
 post ("/messageLike/*/*") do |id,userId|
