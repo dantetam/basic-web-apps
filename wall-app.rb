@@ -77,6 +77,15 @@ class CommentLike
   validates_uniqueness_of :user, scope: :comment
 end
 
+class Subscription
+  include DataMapper::Resource
+  property :id,          Serial
+  belongs_to :from_user, "User"
+  belongs_to :to_user,   "User"
+  
+  validates_uniqueness_of :from_user, scope: :to_user
+end
+
 class User
   include DataMapper::Resource
   property :id,       Serial
@@ -84,11 +93,16 @@ class User
   property :password, String, required: true
   
   #has 1, :userProfile
-  has n, :subscriptions_out, "Subscription", :child_key => [ :from_user_id ]
-  #has n, :subscriptions_in,  "Subscription"
-  has n, :followings,        "User",         :through => :subscriptions_out, :via => :to_user
+  
   has n, :messages,          "Message"
+  
+  has n, :subscriptions_out, "Subscription", :child_key => [ :from_user_id ]
+  has n, :followings,        "User",         :through => :subscriptions_out, :via => :to_user
   has n, :inbox_messages,    "Message",      :through => :followings, :via => :messages
+  
+  has n, :tumblr_subscriptions, "TumblrSubscription", :child_key => [ :from_user_id ]
+  has n, :tumblr_followings, "String", :through => :tumblr_subscriptions, :via => :id
+  #has n, :tumblr_messages,    "Message",              :through => :tumblr_followings, :via => :messages
   
   validates_uniqueness_of :name
   #validates_length_of :name, :within => 1..16
@@ -102,21 +116,13 @@ class User
   end
 end
 
-class Subscription
-  include DataMapper::Resource
-  property :id,          Serial
-  belongs_to :from_user, "User"
-  belongs_to :to_user,   "User"
-  
-  validates_uniqueness_of :from_user, scope: :to_user
-end
-
 class TumblrSubscription
   include DataMapper::Resource
   
   property :id,     Serial
   property :tumblr_name,   String
-  belongs_to :user, "User"
+  belongs_to :tumblr_followings, "User"
+  belongs_to :from_user, "User"
 end
 
 =begin
@@ -169,6 +175,20 @@ def get_subscribed_to(user)
   end
 end
 
+def get_subscribed_tumblr(user)
+  subs = user.tumblr_followings
+  case subs.length
+  when 0
+    return "no one"
+  when 1
+    return subs[0]
+  when 2
+    return subs[0] + " and " + subs[1]
+  else
+    return (subs[0..(subs.length-2)].map { |subscription| subscription.name }.join(", ")).to_s + ", and " + (subs[subs.length-1].name.to_s)
+  end
+end
+
 # Authenticate via OAuth
 $client = Tumblr::Client.new({
   :consumer_key => 'TUlMONefwOLByGWFKJ0C3WZBWxQuvGL6Bky5fZKKHSUQANSYBM',
@@ -177,13 +197,14 @@ $client = Tumblr::Client.new({
   :oauth_token_secret => 'rI20PdcagdD9LEOej3P5zlCqvwHzClJFlvvaJj8zerhIbtRNUX'
 })
 
+puts $client.info
+
 #A poetry blog on tumblr
-puts $client.posts 'thehappypoetess.tumblr.com', :type => 'text', :limit => 5, :filter => 'text'
+puts $client.posts 'lionofchaeronea.tumblr.com', :type => 'text', :limit => 5, :filter => 'text'
 
 def tumblr_post(blogname)
   hash = $client.posts blogname, :type => 'text', :limit => 5, :filter => 'text'
-  puts "hey"
-  return hash["posts"][0]["body"]
+  return hash["posts"]
 end
 
 get("/") do
@@ -209,7 +230,13 @@ end
 
 get("/tumblr/*") do |tumblr_name|
   blog = $client.blog_info (tumblr_name + ".tumblr.com")
+  puts tumblr_name + ".tumblr.com"
   erb(:tumblr_profile, locals: { blog: tumblr_name + ".tumblr.com", client: $client, loggedUser: User.find_by_id(session[:user_id]) } )
+end
+
+get("/tumblrSubscribe/*") do |name|
+  TumblrSubscription.create(from_user: User.find_by_id(session[:user_id]), tumblr_name: name)
+  redirect("/")
 end
 
 post ("/messageLike/*/*") do |id,userId|

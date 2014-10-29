@@ -49,6 +49,11 @@
         <% else %>
           <h2>Your messages:</h2>
           <ol class="message-list">
+            <% loggedUser.tumblr_followings.each do |blogname| %>
+              <% tumblr_post(blogname).each do |pst| %>
+                <p><%= pst["body"] %></p>
+              <% end %>
+            <% end %>
             <% messages.each do |message| %>
               <% if message.shown == 1 then %>
                 <li>

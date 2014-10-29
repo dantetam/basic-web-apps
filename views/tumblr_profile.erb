@@ -9,7 +9,10 @@
   <body>
     <div id="page">
       <form id="message-form" method="POST" action="/redirectHome">
-        <button type="submit">To community wall</button>
+        <button type="submit">To your wall</button>
+      </form>
+      <form id="subscribe-form" method="POST" action=<%="/tumblrSubscribe/" + blog.to_s %> >
+        <button type="submit">Subscribe to this Tumblr user</button>
       </form>
       <h1><%= client.blog_info(blog.to_s)["blog"]["name"] %></h1>
       <!--
@@ -17,7 +20,9 @@
         <button type="submit">Subscribe to this user</button>
       </form>
       -->
-      <p><%= tumblr_post(blog.to_s) %></p>
+      <% tumblr_post(blog.to_s).each do |pst| %>
+        <p><%= pst["body"] %></p>
+      <% end %>
     </div>
   </body>
 </html>
