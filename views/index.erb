@@ -44,16 +44,23 @@
       </form>
       -->
       <% if messages != nil %>
+      
+        <% if loggedUser.tumblr_subscriptions.empty? then %>
+          <p>No posts from Tumblr</p>
+        <% else %>
+          <% loggedUser.tumblr_subscriptions.each do |ts| %>
+            <% tumblr_post(ts.tumblr_name).each do |pst| %>
+              <p>Post:</p>
+              <p><%= pst["body"] %></p>
+            <% end %>
+          <% end %>
+        <% end %>
+        
         <% if messages.empty? %>
           <h2>No messages from you.</h2>
         <% else %>
           <h2>Your messages:</h2>
           <ol class="message-list">
-            <% loggedUser.tumblr_followings.each do |blogname| %>
-              <% tumblr_post(blogname).each do |pst| %>
-                <p><%= pst["body"] %></p>
-              <% end %>
-            <% end %>
             <% messages.each do |message| %>
               <% if message.shown == 1 then %>
                 <li>

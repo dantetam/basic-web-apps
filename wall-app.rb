@@ -213,6 +213,8 @@ puts $client.info
 puts $client.posts 'lionofchaeronea.tumblr.com', :type => 'text', :limit => 5, :filter => 'text'
 
 def tumblr_post(blogname)
+  puts "Call"
+  puts blogname
   hash = $client.posts blogname, :type => 'text', :limit => 5, :filter => 'text'
   return hash["posts"]
 end
