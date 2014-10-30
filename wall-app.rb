@@ -101,7 +101,8 @@ class User
   has n, :inbox_messages,    "Message",      :through => :followings, :via => :messages
   
   has n, :tumblr_subscriptions, "TumblrSubscription", :child_key => [ :from_user_id ]
-  has n, :tumblr_followings, "String", :through => :tumblr_subscriptions, :via => :id
+  #has n, :stringy, "String", :through => :tumblr_subscriptions, :via => :tumblr_name
+  #has n, :tumblr_followings, "TumblrBlog", :through => :tumblr_subscriptions, :via => :tumblr_name
   #has n, :tumblr_messages,    "Message",              :through => :tumblr_followings, :via => :messages
   
   validates_uniqueness_of :name
@@ -121,9 +122,18 @@ class TumblrSubscription
   
   property :id,     Serial
   property :tumblr_name,   String
-  belongs_to :tumblr_followings, "User"
+  #belongs_to :tumblr_followings, "User"
   belongs_to :from_user, "User"
 end
+
+=begin
+class TumblrBlog
+  include DataMapper::Resource
+  
+  property :id,          Serial
+  property :tumblr_name, String
+end
+=end
 
 =begin
 class Hate
@@ -176,16 +186,16 @@ def get_subscribed_to(user)
 end
 
 def get_subscribed_tumblr(user)
-  subs = user.tumblr_followings
+  subs = user.tumblr_subscriptions
   case subs.length
   when 0
     return "no one"
   when 1
-    return subs[0]
+    return subs[0].tumblr_name
   when 2
-    return subs[0] + " and " + subs[1]
+    return subs[0].tumblr_name + " and " + subs[1].tumblr_name
   else
-    return (subs[0..(subs.length-2)].map { |subscription| subscription.name }.join(", ")).to_s + ", and " + (subs[subs.length-1].name.to_s)
+    return (subs[0..(subs.length-2)].map { |subscription| subscription.tumblr_name }.join(", ")).to_s + ", and " + (subs[subs.length-1].tumblr_name.to_s)
   end
 end
 
@@ -234,8 +244,10 @@ get("/tumblr/*") do |tumblr_name|
   erb(:tumblr_profile, locals: { blog: tumblr_name + ".tumblr.com", client: $client, loggedUser: User.find_by_id(session[:user_id]) } )
 end
 
-get("/tumblrSubscribe/*") do |name|
-  TumblrSubscription.create(from_user: User.find_by_id(session[:user_id]), tumblr_name: name)
+post("/tumblrSubscribe/*") do |name|
+  user = User.find_by_id(session[:user_id])
+  ts = TumblrSubscription.new(from_user: user, tumblr_name: name)
+  ts.save
   redirect("/")
 end
 
