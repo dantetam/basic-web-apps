@@ -117,6 +117,15 @@ class User
   end
 end
 
+class TumblrPost
+  include DataMapper::Resource
+  
+  property :id,   Serial
+  property :body, Text
+  
+  belongs_to :tumblr_subscription, "TumblrSubscription"
+end
+
 class TumblrSubscription
   include DataMapper::Resource
   
@@ -124,6 +133,10 @@ class TumblrSubscription
   property :tumblr_name,   String
   #belongs_to :tumblr_followings, "User"
   belongs_to :from_user, "User"
+  
+  has n, :tumblr_posts, "TumblrPost"
+  
+  validates_uniqueness_of :from_user, scope: :tumblr_name
 end
 
 =begin
@@ -213,9 +226,7 @@ puts $client.info
 puts $client.posts 'lionofchaeronea.tumblr.com', :type => 'text', :limit => 5, :filter => 'text'
 
 def tumblr_post(blogname)
-  puts "Call"
-  puts blogname
-  hash = $client.posts blogname, :type => 'text', :limit => 5, :filter => 'text'
+  hash = $client.posts blogname, :type => 'text', :filter => 'text'
   return hash["posts"]
 end
 
@@ -248,8 +259,21 @@ end
 
 post("/tumblrSubscribe/*") do |name|
   user = User.find_by_id(session[:user_id])
-  ts = TumblrSubscription.new(from_user: user, tumblr_name: name)
-  ts.save
+  t_sub = TumblrSubscription.new(from_user: user, tumblr_name: name)
+  t_sub.save
+  tumblr_post(name).each do |pst|
+    #puts t_sub.tumblr_name
+    t_post = TumblrPost.create(:body => pst["body"].to_s, :tumblr_subscription => t_sub)
+    p t_post.errors
+    if t_post.saved?
+      p t_sub.tumblr_posts.length
+      p "yes"
+    else
+      p "waffles"
+      erb(:error)
+      return
+    end
+  end
   redirect("/")
 end
 

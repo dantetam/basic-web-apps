@@ -46,12 +46,13 @@
       <% if messages != nil %>
       
         <% if loggedUser.tumblr_subscriptions.empty? then %>
-          <p>No posts from Tumblr</p>
+          <h2>No posts from Tumblr</h2>
         <% else %>
           <% loggedUser.tumblr_subscriptions.each do |ts| %>
-            <% tumblr_post(ts.tumblr_name).each do |pst| %>
+            <p><%= ts.tumblr_posts.length %></p>
+            <% ts.tumblr_posts.each do |pst| %>
               <p>Post:</p>
-              <p><%= pst["body"] %></p>
+              <p><%= pst.body %></p>
             <% end %>
           <% end %>
         <% end %>
