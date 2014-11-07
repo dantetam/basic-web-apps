@@ -227,8 +227,15 @@ puts $client.posts 'lionofchaeronea.tumblr.com', :type => 'text', :limit => 5, :
 
 def tumblr_post(blogname)
   hash = $client.posts blogname, :type => 'text', :filter => 'text'
+  hash2 = $client.posts blogname, :type => 'photo'
+  return hash["posts"] + hash2["posts"]
+end
+
+=begin
+def tumblr_images(blogname)
   return hash["posts"]
 end
+=end
 
 get("/") do
   messages = Message.all(order: :created_at.desc)

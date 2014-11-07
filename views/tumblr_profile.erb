@@ -21,8 +21,13 @@
       </form>
       -->
       <% tumblr_post(blog.to_s).each do |pst| %>
-        <p><%= pst["body"] %></p>
+        <% if pst["type"] == "photo" then %>
+          <p><img src=<%= pst["image_permalink"].to_s %>></img></p>
+        <% else %>
+          <p><%= pst["body"].to_s %></p>
+        <% end %>
       <% end %>
+      
     </div>
   </body>
 </html>
