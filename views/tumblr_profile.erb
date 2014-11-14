@@ -22,8 +22,9 @@
       -->
       <% tumblr_post(blog.to_s).each do |pst| %>
         <% if pst["type"] == "photo" then %>
-          <p><img src=<%= pst["image_permalink"].to_s %>></img></p>
-        <% else %>
+          <p><img src=<%= pst["photos"][0]["original_size"]["url"] %>></img></p>
+        <% end %>
+        <% if pst["type"] == "text" then %>
           <p><%= pst["body"].to_s %></p>
         <% end %>
       <% end %>

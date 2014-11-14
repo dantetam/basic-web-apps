@@ -225,10 +225,17 @@ puts $client.info
 #A poetry blog on tumblr
 puts $client.posts 'lionofchaeronea.tumblr.com', :type => 'text', :limit => 5, :filter => 'text'
 
+=begin
 def tumblr_post(blogname)
   hash = $client.posts blogname, :type => 'text', :filter => 'text'
   hash2 = $client.posts blogname, :type => 'photo'
   return hash["posts"] + hash2["posts"]
+end
+=end
+
+def tumblr_post(blogname)
+  hash = $client.posts blogname, :filter => 'text'
+  return hash["posts"]
 end
 
 =begin
