@@ -20,14 +20,20 @@
         <button type="submit">Subscribe to this user</button>
       </form>
       -->
-      <% tumblr_post(blog.to_s).each do |pst| %>
-        <% if pst["type"] == "photo" then %>
-          <p><img src=<%= pst["photos"][0]["original_size"]["url"] %>></img></p>
+      <div id="post-list">
+        <% tumblr_post(blog.to_s).each do |pst| %>
+          <% if pst["type"] == "photo" then %>
+            <div class="post-image">
+              <p><img src=<%= pst["photos"][0]["original_size"]["url"] %>></img></p>
+            </div>
+          <% end %>
+          <% if pst["type"] == "text" then %>
+            <div class="post-text">
+              <p><%= pst["body"].to_s %></p>
+            </div>
+          <% end %>
         <% end %>
-        <% if pst["type"] == "text" then %>
-          <p><%= pst["body"].to_s %></p>
-        <% end %>
-      <% end %>
+      </div>
       
     </div>
   </body>

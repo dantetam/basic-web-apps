@@ -9,7 +9,7 @@
   </head>
   <body>
     <div id="page">
-      <h1>Social Wall</h1>
+      <h1>ReTumblt</h1>
       <% if loggedUser != nil then %>
         <p><%= "Logged in as: " << loggedUser.name %></p>
       <% else %>
@@ -48,11 +48,25 @@
         <% if loggedUser.tumblr_subscriptions.empty? then %>
           <h2>No posts from Tumblr</h2>
         <% else %>
-          <% loggedUser.tumblr_subscriptions.each do |ts| %>
-            <p><%= ts.tumblr_posts.length %></p>
-            <% ts.tumblr_posts.each do |pst| %>
-              <p>Post:</p>
-              <p><%= pst.body %></p>
+          <% loggedUser.tumblr_subscriptions.each do |t_sub| %>
+            <% tumblr_post(t_sub.tumblr_name.to_s).each do |pst| %>
+              <% if pst["type"] == "photo" then %>
+                <div class="post-image">
+                  <p><img src=<%= pst["photos"][0]["original_size"]["url"] %>></img></p>
+                </div>
+              <% end %>
+              <% if pst["type"] == "text" then %>
+                <div class="post-text">
+                  <p><%= pst["body"].to_s %></p>
+                </div>
+              <% end %>
+              <!--
+              <p><#%= ts.tumblr_posts.length %></p>
+              <#% ts.tumblr_posts.each do |pst| %>
+                <p>Post:</p>
+                <p><#%= pst.body %></p>
+              <#% end %>
+              -->
             <% end %>
           <% end %>
         <% end %>

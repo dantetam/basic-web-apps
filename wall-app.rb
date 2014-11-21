@@ -278,17 +278,18 @@ post("/tumblrSubscribe/*") do |name|
   tumblr_post(name).each do |pst|
     #puts t_sub.tumblr_name
     t_post = TumblrPost.create(:body => pst["body"].to_s, :tumblr_subscription => t_sub)
-    p t_post.errors
+    #p t_post.errors
     if t_post.saved?
-      p t_sub.tumblr_posts.length
-      p "yes"
+      redirect("/")
+      #p t_sub.tumblr_posts.length
+      #p "yes"
     else
-      p "waffles"
+      #p "waffles"
       erb(:error)
       return
     end
   end
-  redirect("/")
+  #redirect("/")
 end
 
 post ("/messageLike/*/*") do |id,userId|
