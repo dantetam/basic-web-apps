@@ -29,13 +29,13 @@
         <button type="submit">Post</button>
       </form>
       <form id="sign-up-form" method="POST" action="/register">
-        <textarea id="sign-up-username" name="username" placeholder="Your new username"></textarea>
-        <textarea id="sign-up-password" name="password" placeholder="Your new password"></textarea>
+        <input type="text" id="sign-up-username" name="username" placeholder="Your new username"></input>
+        <input type="text" id="sign-up-password" name="password" placeholder="Your new password"></input>
         <button type="submit">Sign up!</button>
       </form>
       <form id="sign-in-form" method="POST" action="/signin">
-        <textarea id="sign-in-username" name="username" placeholder="Username"></textarea>
-        <textarea id="sign-in-password" name="password" placeholder="Password"></textarea>
+        <input type="text" id="sign-in-username" name="username" placeholder="Username"></input>
+        <input type="text" id="sign-in-password" name="password" placeholder="Password"></input>
         <button type="submit">Sign in!</button>
       </form>
       <!--
@@ -180,15 +180,17 @@
       <% else %>
         <h2>Registered Users</h2>
         <form id="search-users" method="POST" action="/searchUser">
-          <textarea id="username" name="username" placeholder="Name"></textarea>
+          <input type="text" id="username" name="username" placeholder="ReTumblr Name"></input>
           <button type="submit">Search</button>
         </form>
         <% users.each do |user| %>
-          <a href=<%= "/users/" << user.id.to_s %>><%= user.name %></a>
+          <a href= <%= "/users/" << user.id.to_s %> ><%= user.name %></a>
         <% end %>
       <% end %>
       <form id="search-tumblr" method="POST" action="/tumblr">
-        <textarea id="tumblrname" name="tumblrname" placeholder="Tumblr Blog Name"></textarea>
+        <div id="search-tumblr-field">
+          <input type="text" id="tumblrname" name="tumblrname" size="40" placeholder="Tumblr Blog (do not include '.tumblr.com')"></input>
+        </div>
         <button type="submit">Get</button>
       </form>
     </div>

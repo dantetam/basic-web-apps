@@ -33,6 +33,12 @@ body {
 }
 
 /*
+#search-tumblr #search-tumblr-field {
+  text-align: right;
+}
+*/
+
+/*
 .inbox-message-list .inbox-message-body {
   font-size: 12px;
   font-style: italic;

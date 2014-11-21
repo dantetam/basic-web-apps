@@ -17,6 +17,21 @@
       <form id="message-form" method="POST" action=<%= "/subscribe/" + loggedUser.id.to_s + "/" + user.id.to_s %>>
         <button type="submit">Subscribe to this user</button>
       </form>
+      <h2><%= user.name + "'s content:" %></h2>
+      <% user.tumblr_subscriptions.each do |t_sub| %>
+        <% tumblr_post(t_sub.tumblr_name.to_s).each do |pst| %>
+          <% if pst["type"] == "photo" then %>
+            <div class="post-image">
+              <p><img src=<%= pst["photos"][0]["original_size"]["url"] %>></img></p>
+            </div>
+          <% end %>
+          <% if pst["type"] == "text" then %>
+            <div class="post-text">
+              <p><%= pst["body"].to_s %></p>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
     </div>
   </body>
 </html>
