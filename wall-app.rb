@@ -100,7 +100,7 @@ class User
   has n, :followings,        "User",         :through => :subscriptions_out, :via => :to_user
   has n, :inbox_messages,    "Message",      :through => :followings, :via => :messages
   
-  has n, :tumblr_subscriptions, "TumblrSubscription", :child_key => [ :from_user_id ]
+  has n, :tumblr_subscriptions, "TumblrSubscription"
   #has n, :stringy, "String", :through => :tumblr_subscriptions, :via => :tumblr_name
   #has n, :tumblr_followings, "TumblrBlog", :through => :tumblr_subscriptions, :via => :tumblr_name
   #has n, :tumblr_messages,    "Message",              :through => :tumblr_followings, :via => :messages
@@ -132,11 +132,11 @@ class TumblrSubscription
   property :id,     Serial
   property :tumblr_name,   String
   #belongs_to :tumblr_followings, "User"
-  belongs_to :from_user, "User"
+  belongs_to :user, "User"
   
   has n, :tumblr_posts, "TumblrPost"
   
-  validates_uniqueness_of :from_user, scope: :tumblr_name
+  #validates_uniqueness_of :user, scope: :tumblr_name
 end
 
 =begin
@@ -273,23 +273,25 @@ end
 
 post("/tumblrSubscribe/*") do |name|
   user = User.find_by_id(session[:user_id])
-  t_sub = TumblrSubscription.new(from_user: user, tumblr_name: name)
+  p user
+  t_sub = TumblrSubscription.new(:user => user, tumblr_name: name)
   t_sub.save
+  p t_sub.errors
   tumblr_post(name).each do |pst|
     #puts t_sub.tumblr_name
-    t_post = TumblrPost.create(:body => pst["body"].to_s, :tumblr_subscription => t_sub)
-    #p t_post.errors
-    if t_post.saved?
-      redirect("/")
-      #p t_sub.tumblr_posts.length
-      #p "yes"
-    else
-      #p "waffles"
-      erb(:error)
-      return
+    p t_sub
+    if pst["type"] == "text" then
+      t_post = TumblrPost.create(:body => pst["body"].to_s, :tumblr_subscription => t_sub)
+      p t_post.errors
+      if t_post.saved?
+        #p t_sub.tumblr_posts.length
+        p "yes"
+      else
+        p "waffles"
+      end
     end
   end
-  #redirect("/")
+  redirect("/")
 end
 
 post ("/messageLike/*/*") do |id,userId|

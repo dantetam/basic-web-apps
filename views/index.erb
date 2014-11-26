@@ -51,40 +51,20 @@
         
           <!-- A bit of duplication here -->
           <% loggedUser.tumblr_subscriptions.each do |t_sub| %>
-            <% tumblr_post(t_sub.tumblr_name.to_s).each do |pst| %>
-              <% if pst["type"] == "photo" then %>
-                <div class="post-image">
-                  <p><img src=<%= pst["photos"][0]["original_size"]["url"] %>></img></p>
-                </div>
-              <% end %>
-              <% if pst["type"] == "text" then %>
-                <div class="post-text">
-                  <p><%= pst["body"].to_s %></p>
-                </div>
-              <% end %>
-              <!--
-              <p><#%= ts.tumblr_posts.length %></p>
-              <#% ts.tumblr_posts.each do |pst| %>
-                <p>Post:</p>
-                <p><#%= pst.body %></p>
-              <#% end %>
-              -->
+            <% t_sub.tumblr_posts.each do |pst| %>
+              <div class="post-text">
+                <p><%= pst.body.to_s %></p>
+              </div>
             <% end %>
           <% end %>
           
+          
           <% loggedUser.followings.each do |retumblr_user| %>
             <% retumblr_user.tumblr_subscriptions.each do |t_sub| %>
-              <% tumblr_post(t_sub.tumblr_name.to_s).each do |pst| %>
-                <% if pst["type"] == "photo" then %>
-                  <div class="post-image">
-                    <p><img src=<%= pst["photos"][0]["original_size"]["url"] %>></img></p>
-                  </div>
-                <% end %>
-                <% if pst["type"] == "text" then %>
-                  <div class="post-text">
-                    <p><%= pst["body"].to_s %></p>
-                  </div>
-                <% end %>
+              <% t_sub.tumblr_posts.each do |pst| %>
+                <div class="post-text">
+                  <p><%= pst.body.to_s %></p>
+                </div>
               <% end %>
             <% end %>
           <% end %>
@@ -184,7 +164,9 @@
           <button type="submit">Search</button>
         </form>
         <% users.each do |user| %>
-          <a href= <%= "/users/" << user.id.to_s %> ><%= user.name %></a>
+          <div id=<%= "listed-username" + user.id.to_s %>>
+            <a href=<%= "/users/" << user.id.to_s %>><%= user.name %></a>
+          </div>
         <% end %>
       <% end %>
       <form id="search-tumblr" method="POST" action="/tumblr">
