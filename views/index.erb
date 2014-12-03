@@ -9,12 +9,16 @@
   </head>
   <body>
     <div id="page">
-      <h1>ReTumblr</h1>
-      <% if loggedUser != nil then %>
-        <p><%= "Logged in as: " << loggedUser.name %></p>
-      <% else %>
-        <p>You are not logged in.</p>
-      <% end %>
+      <div id="title-heading">
+        <h1>ReTumblr</h1>
+      </div>
+      <div id="loggeduser">
+        <% if loggedUser != nil then %>
+          <p><%= "Logged in as: " << loggedUser.name %></p>
+        <% else %>
+          <p>You are not logged in.</p>
+        <% end %>
+      </div>
       <!--
       <#% users.each do |user| %>
         <#% if users.index(user).to_i == loggedUser then %>
@@ -30,13 +34,17 @@
       </form>
       <form id="sign-up-form" method="POST" action="/register">
         <input type="text" id="sign-up-username" name="username" placeholder="Your new username"></input>
-        <input type="text" id="sign-up-password" name="password" placeholder="Your new password"></input>
-        <button type="submit">Sign up!</button>
+        <div id="sign-up-password">
+          <input type="text" name="password" placeholder="Your new password"></input>
+          <button type="submit">Sign up!</button>
+        </div>
       </form>
       <form id="sign-in-form" method="POST" action="/signin">
         <input type="text" id="sign-in-username" name="username" placeholder="Username"></input>
-        <input type="text" id="sign-in-password" name="password" placeholder="Password"></input>
-        <button type="submit">Sign in!</button>
+        <div id="sign-in-password">
+          <input type="text" name="password" placeholder="Password"></input>
+          <button type="submit">Sign in!</button>
+        </div>
       </form>
       <!--
       <form id="guest-log-in" method="POST" action="/signinguest">
