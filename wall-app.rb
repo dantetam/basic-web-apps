@@ -94,13 +94,15 @@ class User
   
   #has 1, :userProfile
   
-  has n, :messages,          "Message"
+  has n, :messages,             "Message"
   
-  has n, :subscriptions_out, "Subscription", :child_key => [ :from_user_id ]
-  has n, :followings,        "User",         :through => :subscriptions_out, :via => :to_user
-  has n, :inbox_messages,    "Message",      :through => :followings, :via => :messages
+  has n, :subscriptions_out,    "Subscription", :child_key => [ :from_user_id ]
+  has n, :followings,           "User",         :through => :subscriptions_out, :via => :to_user
+  has n, :inbox_messages,       "Message",      :through => :followings, :via => :messages
   
   has n, :tumblr_subscriptions, "TumblrSubscription"
+  
+  has n, :recent_searches,      "TumblrSearch"
   #has n, :stringy, "String", :through => :tumblr_subscriptions, :via => :tumblr_name
   #has n, :tumblr_followings, "TumblrBlog", :through => :tumblr_subscriptions, :via => :tumblr_name
   #has n, :tumblr_messages,    "Message",              :through => :tumblr_followings, :via => :messages
@@ -137,6 +139,14 @@ class TumblrSubscription
   has n, :tumblr_posts, "TumblrPost"
   
   #validates_uniqueness_of :user, scope: :tumblr_name
+end
+
+class TumblrSearch
+  include DataMapper::Resource
+  
+  property :id,          Serial
+  property :tumblr_name, String
+  belongs_to :user, "User"
 end
 
 =begin
@@ -250,9 +260,24 @@ get("/") do
   users = User.all()
   user = User.find_by_id(session[:user_id])
   if user != nil then
-    erb(:index, locals: { messages: user.messages, inbox_messages: user.inbox_messages, comments: comments, users: users, loggedUser: user } )
+    p user.recent_searches.length
+    erb(:index, locals: { 
+      messages: user.messages, 
+      inbox_messages: user.inbox_messages, 
+      comments: comments, 
+      users: users, 
+      loggedUser: user, 
+      tumblr_search: user.recent_searches
+    })
   else
-    erb(:index, locals: { messages: nil, inbox_messages: nil, comments: comments, users: users, loggedUser: nil } )
+    erb(:index, locals: { 
+      messages: nil, 
+      inbox_messages: nil, 
+      comments: comments, 
+      users: users, 
+      loggedUser: nil, 
+      tumblr_search: nil
+    })
   end
 end
 
@@ -386,7 +411,14 @@ end
 
 post("/tumblr") do
   puts params["tumblrname"].to_s
-  redirect("/tumblr/" + params["tumblrname"].to_s)
+  ts = TumblrSearch.new(:user => User.find_by_id(session[:user_id]), :tumblr_name => params["tumblrname"].to_s)
+  ts.save
+  p ts.errors
+  if ts.saved? 
+    redirect("/tumblr/" + params["tumblrname"].to_s)
+  else
+    redirect("/")
+  end
 end
 
 post("/messages") do

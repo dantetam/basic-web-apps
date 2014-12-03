@@ -143,10 +143,63 @@
             <% inbox_messages.each do |message| %>
               <% if message.shown == 1 then %>
                 <li>
+                  <!--
                   <div class="inbox-message-body">
-                    <p><%= message.body %></p>
-                    <p><%= "Posted by " << users.get(message.user.id).name %></p>
+                    <p><#%= message.body %></p>
+                    <p><#%= "Posted by " << users.get(message.user.id).name %></p>
                   </div>
+                  -->
+                  
+                  <div class="message-body">
+                    <p><%= message.body %></p>
+                  </div>
+                  <div class="message-likes">
+                    <p><%= get_message_likes(message) %></p>
+                  <div>
+                    <!--
+                    <form name="input" action="/submitOpinion" method="get">
+                      <input type="checkbox" name="opinion" value=<#%= "Like" << messages.index(message).to_s %> >Like
+                      <input type="checkbox" name="opinion" value=<#%= "Hate" << messages.index(message).to_s %> >Hate
+                      <input type="checkbox" name="opinion" value=<#%= "Impl" << messages.index(message).to_s %> >Implode
+                      <input type="submit" value="Submit">
+                    </form>
+                    -->
+                    <form action=<%= "/messageLike/" << message.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
+                      <button type="submit">Like</button>
+                    </form>
+                    <form action="/messageImplode/<%= message.id %>" method="POST">
+                      <button type="submit">IMPLODE</button>
+                    </form>
+                  </div>
+                  <div class="message-timestamp">
+                    <p><%= "Posted by " << users.get(message.user.id).name + " on " + message.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
+                  </div>
+                  <% comments.each do |comment| %>
+                    <% if comment.message == message then %>
+                      <div class="comment-body">
+                        <p><%= comment.body %></p>
+                      </div>
+                      <div class="comment-timestamp">
+                        <p><%= "Commented by " << users.get(comment.user.id).name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
+  
+                        <div>
+                          <form action=<%= "/commentLike/" << comment.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
+                            <button type="submit">Like</button>
+                          </form>
+                          <form action="/commentImplode/<%= comment.id %>" method="POST">
+                            <button type="submit">IMPLODE</button>
+                          </form>
+                        </div>
+                      </div>
+                    <% end %>
+                  <% end %>
+                  <div>
+                    <form id="comment-form" method="POST" action="/comments/<%= message.id %>">
+                      <textarea id="comment-body" name="body" placeholder="Enter a comment to <%= message.user.name %>'s message."></textarea>
+                      <button type="submit">Post</button>
+                    </form>
+                  </div>
+                  
                 </li>
               <% end %>
             <% end %>
@@ -170,11 +223,16 @@
         <% end %>
       <% end %>
       <form id="search-tumblr" method="POST" action="/tumblr">
-        <div id="search-tumblr-field">
-          <input type="text" id="tumblrname" name="tumblrname" size="40" placeholder="Tumblr Blog (do not include '.tumblr.com')"></input>
-        </div>
+        <input type="text" id="tumblrname" name="tumblrname" size="40" placeholder="Tumblr Blog (do not include '.tumblr.com')"></input>
         <button type="submit">Get</button>
       </form>
+      <% if tumblr_search != nil %>
+        <% tumblr_search.each do |ts| %>
+          <div id=<%= "listed-tumblrname" + ts.id.to_s %>>
+            <a href=<%= "/tumblr/" + ts.tumblr_name.to_s %>><%= ts.tumblr_name %></a>
+          </div>
+        <% end %>
+      <% end %>
     </div>
   </body>
 </html>
