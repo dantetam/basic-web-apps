@@ -7,6 +7,8 @@ require "dm-validations";
 require "tumblr_client";
 require "json";
 
+require "net/http"
+
 #An announcement to all subscribers
 class Message
   include DataMapper::Resource
@@ -61,6 +63,14 @@ class Comment
   end
 end
 
+class TumblrLike
+  include DataMapper::Resource
+  
+  property :id, Serial
+  belongs_to :user,        "User"
+  belongs_to :tumblr_post, "TumblrPost"
+end
+
 class MessageLike
   include DataMapper::Resource
   property :id,         Serial
@@ -102,6 +112,8 @@ class User
   
   has n, :tumblr_subscriptions, "TumblrSubscription"
   
+  has n, :tumblr_likes,         "TumblrLike"
+  
   has n, :recent_searches,      "TumblrSearch"
   #has n, :stringy, "String", :through => :tumblr_subscriptions, :via => :tumblr_name
   #has n, :tumblr_followings, "TumblrBlog", :through => :tumblr_subscriptions, :via => :tumblr_name
@@ -119,11 +131,30 @@ class User
   end
 end
 
+class TumblrComment
+  include DataMapper::Resource
+  property :id,         Serial
+  property :body,       Text,     required: true
+  property :created_at, DateTime, required: true
+  property :shown,      Integer,  required: true, default: 1
+  
+  belongs_to :user
+  belongs_to :tumblr_post, "TumblrPost"
+
+  def hide()
+    self.shown = 0
+  end
+end
+
 class TumblrPost
   include DataMapper::Resource
   
   property :id,   Serial
   property :body, Text
+  
+  has n, :comments,        "Comment"
+  has n, :likes,           "TumblrLike"
+  has n, :tumblr_comments, "TumblrComment"
   
   belongs_to :tumblr_subscription, "TumblrSubscription"
 end
@@ -172,6 +203,9 @@ DataMapper.auto_upgrade!()
 
 enable :sessions
 
+source = Net::HTTP.get('stackoverflow.com', '/index.html')
+p source
+
 def current_user
   # Return nil if no user is logged in
   return nil unless session[:user_id] != nil
@@ -181,6 +215,24 @@ def current_user
 end
 
 def get_message_likes(text)
+  if text.class.name == "Message" or text.class.name == "Comment" then
+    likes = text.messageLikes or text.commentLikes
+  else
+    likes = text.likes
+  end
+  case likes.length
+  when 0
+    return "No likes."
+  when 1
+    return likes[0].user.name + " likes this."
+  when 2
+    return likes[0].user.name + " and " + likes[1].user.name + " like this."
+  else
+    return (likes[0..(likes.length-2)].map { |like| like.user.name }.join(", ")).to_s + ", and " + (likes[(likes.length-1)].user.name.to_s) + " like this.";
+  end
+end
+
+def get_user_likes(text)
   likes = text.messageLikes or text.commentLikes
   case likes.length
   when 0
@@ -230,10 +282,10 @@ $client = Tumblr::Client.new({
   :oauth_token_secret => 'rI20PdcagdD9LEOej3P5zlCqvwHzClJFlvvaJj8zerhIbtRNUX'
 })
 
-puts $client.info
+#puts $client.info
 
 #A poetry blog on tumblr
-puts $client.posts 'lionofchaeronea.tumblr.com', :type => 'text', :limit => 5, :filter => 'text'
+#puts $client.posts 'lionofchaeronea.tumblr.com', :type => 'text', :limit => 5, :filter => 'text'
 
 =begin
 def tumblr_post(blogname)
@@ -337,6 +389,11 @@ post ("/commentLike/*/*") do |id,userId|
   redirect("/")
 end
 
+post ("/tumblrMessageLike/*/*") do |id,userId|
+  new_like = TumblrLike.create(:tumblr_post => TumblrPost.get(id), user: User.get(userId));
+  redirect("/")
+end
+
 =begin
 post ("/commentHate/*") do |id|
   comment = Comment.get(id)
@@ -432,6 +489,15 @@ end
 
 post("/comments/*") do |message_id|
   comment = Comment.create(body: params["body"], created_at: DateTime.now, shown: 1, user: User.find_by_id(session[:user_id]), message: Message.get(message_id))
+  if comment.saved?
+    redirect("/")
+  else
+    erb(:error)
+  end
+end
+
+post("/tumblrMessageComments/*") do |id|
+  comment = Comment.create(body: params["body"], created_at: DateTime.now, shown: 1, user: User.find_by_id(session[:user_id]), message: TumblrPost.get(id))
   if comment.saved?
     redirect("/")
   else
