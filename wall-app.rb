@@ -497,7 +497,7 @@ post("/comments/*") do |message_id|
 end
 
 post("/tumblrMessageComments/*") do |id|
-  comment = Comment.create(body: params["body"], created_at: DateTime.now, shown: 1, user: User.find_by_id(session[:user_id]), message: TumblrPost.get(id))
+  comment = TumblrComment.create(body: params["body"], created_at: DateTime.now, shown: 1, user: User.find_by_id(session[:user_id]), tumblr_post: TumblrPost.get(id))
   if comment.saved?
     redirect("/")
   else

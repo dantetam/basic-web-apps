@@ -73,17 +73,17 @@
                   <textarea id="comment-body" name="body" placeholder="Enter a comment to this Tumblr post."></textarea>
                   <button type="submit">Post</button>
                 </form>
+                <% pst.tumblr_comments.each do |comment| %>
+                  <div class="tumblr-comment">
+                    <div class="comment-body">
+                      <p><%= comment.body %></p>
+                    </div>
+                    <div class="comment-timestamp">
+                      <p><%= "Commented by " << users.get(comment.user.id).name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
+                    </div>
+                  </div>
+                <% end %>
               </div>
-              <% pst.tumblr_comments do |comment| %>
-                <div class="tumblr-comment">
-                  <div class="comment-body">
-                    <p><%= comment.body %></p>
-                  </div>
-                  <div class="comment-timestamp">
-                    <p><%= "Commented by " << users.get(comment.user.id).name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
-                  </div>
-                </div>
-              <% end %>
             <% end %>
           <% end %>
           

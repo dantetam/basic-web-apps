@@ -127,6 +127,20 @@ body {
   text-align: right;
 }
 
+.tumblr-message-comments .tumblr-comment .comment-body {
+  font-size: 16px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+  text-align: right;
+}
+
+.tumblr-message-comments .tumblr-comment .comment-timestamp {
+  font-size: 12px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+  text-align: right;
+}
+
 #sign-up-username {position: fixed; top: 50px; left: 200px;}
 #sign-up-password {position: fixed; top: 75px; left: 200px;}
 #sign-in-username {position: fixed; top: 110px; left: 200px;}
