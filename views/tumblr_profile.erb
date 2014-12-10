@@ -24,7 +24,7 @@
         <% tumblr_post(blog.to_s).each do |pst| %>
           <% if pst["type"] == "photo" then %>
             <div class="post-image">
-              <p><img src=<%= pst["photos"][0]["original_size"]["url"] %>></img></p>
+              <p><img src=<%= pst["photos"][0]["alt_sizes"][1]["url"] %>></img></p>
             </div>
           <% end %>
           <% if pst["type"] == "text" then %>

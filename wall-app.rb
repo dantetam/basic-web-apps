@@ -149,8 +149,10 @@ end
 class TumblrPost
   include DataMapper::Resource
   
-  property :id,   Serial
-  property :body, Text
+  property :id,      Serial
+  property :body,    Text
+  #The link to the picture
+  property :picture, Text 
   
   has n, :comments,        "Comment"
   has n, :likes,           "TumblrLike"
@@ -358,10 +360,12 @@ post("/tumblrSubscribe/*") do |name|
     #puts t_sub.tumblr_name
     p t_sub
     if pst["type"] == "text" then
-      t_post = TumblrPost.create(:body => pst["body"].to_s, :tumblr_subscription => t_sub)
+      t_post = TumblrPost.create(:body => pst["body"].to_s, :tumblr_subscription => t_sub, :picture => "")
+    elsif pst["type"] == "photo" then
+      #p t_post.errors
+      t_post = TumblrPost.create(:body => "This is a picture", :picture => pst["photos"][0]["alt_sizes"][1]["url"].to_s, :tumblr_subscription => t_sub)
       p t_post.errors
-      if t_post.saved?
-        #p t_sub.tumblr_posts.length
+      if t_post.saved? then
         p "yes"
       else
         p "waffles"

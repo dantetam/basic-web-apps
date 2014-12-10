@@ -61,7 +61,11 @@
           <% loggedUser.tumblr_subscriptions.each do |t_sub| %>
             <% t_sub.tumblr_posts.each do |pst| %>
               <div class="post-text">
-                <p><%= pst.body.to_s %></p>
+                <% if pst.picture == "" then %>
+                  <p><%= pst.body.to_s %></p>
+                <% else %>
+                  <p><img src=<%= pst.picture.to_s %>></img></p>
+                <% end %>
               </div>
               <div class="tumblr-message-likes">
                 <form action=<%= "/tumblrMessageLike/" << pst.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
@@ -76,10 +80,10 @@
                 <% pst.tumblr_comments.each do |comment| %>
                   <div class="tumblr-comment">
                     <div class="comment-body">
-                      <p><%= comment.body %></p>
+                      <%= comment.body %>
                     </div>
                     <div class="comment-timestamp">
-                      <p><%= "Commented by " << users.get(comment.user.id).name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %></p>
+                      <%= "Commented by " << comment.user.name << " at " << comment.created_at.strftime("%B %d, %Y at %l:%M%p") %>
                     </div>
                   </div>
                 <% end %>
@@ -91,7 +95,11 @@
             <% retumblr_user.tumblr_subscriptions.each do |t_sub| %>
               <% t_sub.tumblr_posts.each do |pst| %>
                 <div class="post-text">
-                  <p><%= pst.body.to_s %></p>
+                  <% if pst.picture == "" then %>
+                    <p><%= pst.body.to_s %></p>
+                  <% else %>
+                    <p><img src=<%= pst.picture.to_s %>></img></p>
+                  <% end %>
                 </div>
                 <div class="tumblr-message-likes">
                   <form action=<%= "/tumblrMessageLike/" << pst.id.to_s << "/" << loggedUser.id.to_s %> method="POST">
